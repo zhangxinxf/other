@@ -319,7 +319,190 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 						seg.setArrairport(airLine[1]);
 						break;
 					case 5:
-						if (divContent.contains("radio")) {
+						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+							divContent = StringUtils.substringBetween(
+									divContent, "flightSelectGr", "onclick")
+									.replace("\"", "");
+							String[] ids = divContent.split("_");
+							String idsValues = StringUtils.join(ids, ",");
+							idsValues = idsValues.substring(1,
+									idsValues.length());
+							QFPostMethod post = new QFPostMethod(url);
+							// 设置post提交表单数据
+							NameValuePair[] parametersBody = new NameValuePair[] {
+									new NameValuePair(
+											"isFareFamilySearchResult", "true"),
+									new NameValuePair("selectedItineraries",
+											idsValues),
+									new NameValuePair("selectedFlightIds",
+											idsValues),
+									new NameValuePair(
+											"combinabilityReloadRequired",
+											"false"),
+									new NameValuePair("flightIndex", ""),
+									new NameValuePair("flowStep",
+											"AIR_COMBINABLE_FARE_FAMILIES_FLEXIBLE_SEARCH_RESULTS"),
+									new NameValuePair("alignment", "horizontal"),
+									new NameValuePair("context", "airSelection") };
+							post.setRequestBody(parametersBody);
+
+							int status = httpClient.executeMethod(post);
+							if (status == HttpStatus.SC_OK) {
+								//
+							}
+							String body = post.getResponseBodyAsString();
+							body = StringUtils.substringBeforeLast(body, "/*");
+							JSONObject json = JSONObject.parseObject(body);
+							String data = json.getString("bottomBot");
+							data = StringUtils
+									.substringBeforeLast(data,
+											"<div class=\"bodySection collapsedSection\">");
+							data = StringUtils.substringAfterLast(data,
+									"<table");
+							String priceReg = "(\\d)+(\\.){1}\\d+";
+							Pattern pricePattern = Pattern.compile(priceReg);
+							Matcher priceMatcher = pricePattern.matcher(data);
+							int priceCount = 1;
+							while (priceMatcher.find()) {
+								String price = priceMatcher.group();
+								if (priceCount == 1) {// 获取票价
+									if (detail.getPrice() == 0.0) {
+										detail.setPrice(new Double(price));
+									}
+								} else if (priceCount == 3) {// 获取税费
+									if (detail.getTax() == 0.0) {
+										detail.setTax(new Double(price));
+									}
+								}
+								priceCount++;
+							}
+							post.releaseConnection();
+						}
+						break;
+					case 6:
+						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+							divContent = StringUtils.substringBetween(
+									divContent, "flightSelectGr", "onclick")
+									.replace("\"", "");
+							String[] ids = divContent.split("_");
+							String idsValues = StringUtils.join(ids, ",");
+							idsValues = idsValues.substring(1,
+									idsValues.length());
+							QFPostMethod post = new QFPostMethod(url);
+							// 设置post提交表单数据
+							NameValuePair[] parametersBody = new NameValuePair[] {
+									new NameValuePair(
+											"isFareFamilySearchResult", "true"),
+									new NameValuePair("selectedItineraries",
+											idsValues),
+									new NameValuePair("selectedFlightIds",
+											idsValues),
+									new NameValuePair(
+											"combinabilityReloadRequired",
+											"false"),
+									new NameValuePair("flightIndex", ""),
+									new NameValuePair("flowStep",
+											"AIR_COMBINABLE_FARE_FAMILIES_FLEXIBLE_SEARCH_RESULTS"),
+									new NameValuePair("alignment", "horizontal"),
+									new NameValuePair("context", "airSelection") };
+							post.setRequestBody(parametersBody);
+
+							int status = httpClient.executeMethod(post);
+							if (status == HttpStatus.SC_OK) {
+								//
+							}
+							String body = post.getResponseBodyAsString();
+							body = StringUtils.substringBeforeLast(body, "/*");
+							JSONObject json = JSONObject.parseObject(body);
+							String data = json.getString("bottomBot");
+							data = StringUtils
+									.substringBeforeLast(data,
+											"<div class=\"bodySection collapsedSection\">");
+							data = StringUtils.substringAfterLast(data,
+									"<table");
+							String priceReg = "(\\d)+(\\.){1}\\d+";
+							Pattern pricePattern = Pattern.compile(priceReg);
+							Matcher priceMatcher = pricePattern.matcher(data);
+							int priceCount = 1;
+							while (priceMatcher.find()) {
+								String price = priceMatcher.group();
+								if (priceCount == 1) {// 获取票价
+									if (detail.getPrice() == 0.0) {
+										detail.setPrice(new Double(price));
+									}
+								} else if (priceCount == 3) {// 获取税费
+									if (detail.getTax() == 0.0) {
+										detail.setTax(new Double(price));
+									}
+								}
+								priceCount++;
+							}
+							post.releaseConnection();
+						}
+						break;
+					case 7:
+						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+							divContent = StringUtils.substringBetween(
+									divContent, "flightSelectGr", "onclick")
+									.replace("\"", "");
+							String[] ids = divContent.split("_");
+							String idsValues = StringUtils.join(ids, ",");
+							idsValues = idsValues.substring(1,
+									idsValues.length());
+							QFPostMethod post = new QFPostMethod(url);
+							// 设置post提交表单数据
+							NameValuePair[] parametersBody = new NameValuePair[] {
+									new NameValuePair(
+											"isFareFamilySearchResult", "true"),
+									new NameValuePair("selectedItineraries",
+											idsValues),
+									new NameValuePair("selectedFlightIds",
+											idsValues),
+									new NameValuePair(
+											"combinabilityReloadRequired",
+											"false"),
+									new NameValuePair("flightIndex", ""),
+									new NameValuePair("flowStep",
+											"AIR_COMBINABLE_FARE_FAMILIES_FLEXIBLE_SEARCH_RESULTS"),
+									new NameValuePair("alignment", "horizontal"),
+									new NameValuePair("context", "airSelection") };
+							post.setRequestBody(parametersBody);
+
+							int status = httpClient.executeMethod(post);
+							if (status == HttpStatus.SC_OK) {
+								//
+							}
+							String body = post.getResponseBodyAsString();
+							body = StringUtils.substringBeforeLast(body, "/*");
+							JSONObject json = JSONObject.parseObject(body);
+							String data = json.getString("bottomBot");
+							data = StringUtils
+									.substringBeforeLast(data,
+											"<div class=\"bodySection collapsedSection\">");
+							data = StringUtils.substringAfterLast(data,
+									"<table");
+							String priceReg = "(\\d)+(\\.){1}\\d+";
+							Pattern pricePattern = Pattern.compile(priceReg);
+							Matcher priceMatcher = pricePattern.matcher(data);
+							int priceCount = 1;
+							while (priceMatcher.find()) {
+								String price = priceMatcher.group();
+								if (priceCount == 1) {// 获取票价
+									if (detail.getPrice() == 0.0) {
+										detail.setPrice(new Double(price));
+									}
+								} else if (priceCount == 3) {// 获取税费
+									if (detail.getTax() == 0.0) {
+										detail.setTax(new Double(price));
+									}
+								}
+								priceCount++;
+							}
+							post.releaseConnection();
+						}
+						break;
+					case 8:
+						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
 							divContent = StringUtils.substringBetween(
 									divContent, "flightSelectGr", "onclick")
 									.replace("\"", "");

@@ -56,11 +56,11 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("ATH");
+		searchParam.setDep("BCN");
 		searchParam.setArr("MLA");
-		searchParam.setDepDate("2014-07-28");
+		searchParam.setDepDate("2014-07-19");
 		searchParam.setTimeOut("600000");
-		searchParam.setRetDate("2014-09-29");
+		searchParam.setRetDate("2014-07-23");
 		searchParam.setToken("");
 		new Wrapper_gjsairkm001().run(searchParam);
 	}
@@ -383,7 +383,43 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 						seg.setArrairport(airLine[1]);
 						break;
 					case 5:
-						if (divContent.contains("radio")) {
+						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+							divContent = StringUtils.substringBetween(
+									divContent, "flightSelectGr", "onclick")
+									.replace("\"", "");
+							String[] ids = divContent.split("_");
+							String idsValues = StringUtils.join(ids, ",");
+							if (StringUtils.isBlank(detail.getSource())) {
+								detail.setSource(idsValues);
+							}
+						}
+						break;
+					case 6:
+						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+							divContent = StringUtils.substringBetween(
+									divContent, "flightSelectGr", "onclick")
+									.replace("\"", "");
+							String[] ids = divContent.split("_");
+							String idsValues = StringUtils.join(ids, ",");
+							if (StringUtils.isBlank(detail.getSource())) {
+								detail.setSource(idsValues);
+							}
+						}
+						break;
+					case 7:
+						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+							divContent = StringUtils.substringBetween(
+									divContent, "flightSelectGr", "onclick")
+									.replace("\"", "");
+							String[] ids = divContent.split("_");
+							String idsValues = StringUtils.join(ids, ",");
+							if (StringUtils.isBlank(detail.getSource())) {
+								detail.setSource(idsValues);
+							}
+						}
+						break;
+					case 8:
+						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
 							divContent = StringUtils.substringBetween(
 									divContent, "flightSelectGr", "onclick")
 									.replace("\"", "");
