@@ -1,5 +1,3 @@
-
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -76,9 +74,11 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			 * Charsets.UTF_8); } else { html = Files.toString(f,
 			 * Charsets.UTF_8); }
 			 */
+			long startTime = System.currentTimeMillis();
 			html = new Wrapper_gjsairkm001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
 			result = new Wrapper_gjsairkm001().process(html, searchParam);
+			System.out.println((System.currentTimeMillis() - startTime) / 1000);
 			if (result.isRet() && result.getStatus().equals(Constants.SUCCESS)) {
 				List<RoundTripFlightInfo> flightList = (List<RoundTripFlightInfo>) result
 						.getData();
@@ -92,6 +92,7 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			} else {
 				System.out.println(result.getStatus());
 			}
+			System.out.println((System.currentTimeMillis() - startTime) / 1000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -264,6 +265,7 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 				FlightDetail detail = in.getDetail();
 				detail.setPrice(new Double(prices[0]));// 票价
 				detail.setTax(new Double(prices[1]));// 税费
+				detail.setMonetaryunit(prices[2]);
 				round.setDetail(detail);
 				round.setInfo(in.getInfo());
 				// 返程信息
@@ -322,6 +324,9 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 				// 获取某航班信息
 				while (divs.find()) {
 					String divContent = divs.group();
+					if (divContent.contains("N/A") && i == 1) {
+						break;
+					}
 					if (divContent.contains("Hurry only")) {
 						continue;
 					}
@@ -383,7 +388,8 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 						seg.setArrairport(airLine[1]);
 						break;
 					case 5:
-						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+						if (divContent.contains("radio")
+								&& !divContent.contains("N/A")) {
 							divContent = StringUtils.substringBetween(
 									divContent, "flightSelectGr", "onclick")
 									.replace("\"", "");
@@ -395,7 +401,8 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 						}
 						break;
 					case 6:
-						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+						if (divContent.contains("radio")
+								&& !divContent.contains("N/A")) {
 							divContent = StringUtils.substringBetween(
 									divContent, "flightSelectGr", "onclick")
 									.replace("\"", "");
@@ -407,7 +414,8 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 						}
 						break;
 					case 7:
-						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+						if (divContent.contains("radio")
+								&& !divContent.contains("N/A")) {
 							divContent = StringUtils.substringBetween(
 									divContent, "flightSelectGr", "onclick")
 									.replace("\"", "");
@@ -419,7 +427,8 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 						}
 						break;
 					case 8:
-						if (divContent.contains("radio")&&!divContent.contains("N/A")) {
+						if (divContent.contains("radio")
+								&& !divContent.contains("N/A")) {
 							divContent = StringUtils.substringBetween(
 									divContent, "flightSelectGr", "onclick")
 									.replace("\"", "");
@@ -479,7 +488,6 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 					// 添加明细信息
 					detail.setDepcity(arg1.getDep());
 					detail.setArrcity(arg1.getArr());
-					detail.setMonetaryunit("EUR");
 					detail.setDepdate(dateFormat.parse(arg1.getDepDate()));
 					// 获取航班号
 					List<String> flightno = new ArrayList<String>();
@@ -501,8 +509,15 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 		return flightList;
 	}
 
+	/**
+	 * 获取票价
+	 * 
+	 * @param fromIds
+	 * @param toIds
+	 * @return
+	 */
 	public String[] getFlightPrice(String fromIds, String toIds) {
-		String[] prices = new String[2];
+		String[] prices = new String[3];
 		QFPostMethod post = null;
 		String idsValues = fromIds + toIds;
 		idsValues = idsValues.substring(1, idsValues.length()).replace(" ", "");
@@ -530,22 +545,31 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			body = StringUtils.substringBeforeLast(body, "/*");
 			JSONObject json = JSONObject.parseObject(body);
 			String data = json.getString("bottomBot");
-			data = StringUtils.substringBeforeLast(data,
+			String priceData = StringUtils.substringBeforeLast(data,
 					"<div class=\"bodySection collapsedSection\">");
-			data = StringUtils.substringAfterLast(data, "<table");
+			priceData = StringUtils.substringAfterLast(priceData, "<table");
+			String totalPrice = StringUtils
+					.substringBetween(
+							data,
+							"<div id=\"airSelection_SummaryBot_Bottom_totalPrice\" class=\"total\">",
+							"</div>");
+			totalPrice = totalPrice.replace("\n", "").replace("\t", "");
 			String priceReg = "(\\d)+(\\.){1}\\d+";
 			Pattern pricePattern = Pattern.compile(priceReg);
-			Matcher priceMatcher = pricePattern.matcher(data);
-			int priceCount = 1;
-			while (priceMatcher.find()) {
+			Matcher priceMatcher = pricePattern.matcher(priceData);
+			if (priceMatcher.find()) {
+				// EUS 212.25
+				String[] currency = totalPrice.split(" ");
 				String price = priceMatcher.group();
-				if (priceCount == 1) {// 获取票价
-					prices[0] = price;
-				} else if (priceCount == 3) {// 获取税费
-					prices[1] = price;
-				}
-				priceCount++;
+				// 设置票价
+				prices[0] = price;
+				String tax = String.format("%.2f", new Double(currency[1])
+						- new Double(price));
+				prices[1] = tax;
+				// 设置货币单位
+				prices[2] = currency[0].trim();
 			}
+			post.releaseConnection();
 		} catch (Exception e) {
 
 		} finally {

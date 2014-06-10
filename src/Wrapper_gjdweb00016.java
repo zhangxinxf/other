@@ -275,6 +275,8 @@ public class Wrapper_gjdweb00016 implements QunarCrawler {
 		String[] ids = divContent.split("_");
 		String idsValues = StringUtils.join(ids, ",");
 		System.out.println(idsValues);
+		String fr = String.format("%.2f",(164.52-119.0));
+		System.out.println(fr);
 		// System.out.println(StringEscapeUtils.unescapeHtml("main"));
 		// Wrapper_gjdweb00016 instance = new Wrapper_gjdweb00016();
 		// instance.test();
