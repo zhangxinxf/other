@@ -1,6 +1,5 @@
 
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -18,8 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.BaseFlightInfo;
@@ -103,10 +100,9 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
 		String[] fromDate = arg0.getDepDate().split("-");
 		String[] returnDate = arg0.getRetDate().split("-");
-		String bookingUrlPre = "http://ashley4.com/webaccess/cityairways/fareresult.php";
 		BookingResult bookingResult = new BookingResult();
 		BookingInfo bookingInfo = new BookingInfo();
-		bookingInfo.setAction(bookingUrlPre);
+		bookingInfo.setAction(postUrl);
 		bookingInfo.setMethod("post");
 		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("outboundOption.originLocationCode", arg0.getDep());

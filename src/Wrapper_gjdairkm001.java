@@ -1,5 +1,3 @@
-
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,9 +53,9 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("CHQ");
+		searchParam.setDep("BCN");
 		searchParam.setArr("MLA");
-		searchParam.setDepDate("2014-07-28");
+		searchParam.setDepDate("2014-07-19");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
 		new Wrapper_gjdairkm001().run(searchParam);
@@ -103,7 +101,7 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 		map.put("outboundOption.originLocationCode", arg0.getDep());
 		map.put("outboundOption.destinationLocationCode", arg0.getArr());
 		map.put("outboundOption.departureDay", dates[2]);
-		map.put("outboundOption.departureMonth",dates[1]);
+		map.put("outboundOption.departureMonth", dates[1]);
 		map.put("outboundOption.departureYear", dates[0]);
 		map.put("tripType", "OW");
 		map.put("guestTypes[0].type", "ADT");
@@ -171,6 +169,9 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 				return EXCEPTION_INFO;
 			}
 			String ajaxResponseBody = post.getResponseBodyAsString();
+			if (StringUtils.isBlank(ajaxResponseBody)) {
+				return EXCEPTION_INFO;
+			}
 			ajaxResponseBody = ajaxResponseBody.replace("\n", "").replace("\t",
 					"");
 			ajaxResponseBody = ajaxResponseBody.substring(0,
@@ -192,6 +193,7 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("获取网站信息异常", e);
+			return EXCEPTION_INFO;
 		} finally {
 			if (null != get) {
 				get.releaseConnection();
@@ -200,7 +202,6 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 				post.releaseConnection();
 			}
 		}
-		return EXCEPTION_INFO;
 	}
 
 	/*
@@ -221,7 +222,7 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 		// 需要有明显的提示语句，才能判断是否INVALID_DATE|INVALID_AIRLINE|NO_RESULT
 		if (html.contains("Today Flight is full, select an other day or check later for any seat released. ")) {
 			result.setRet(false);
-			result.setStatus(Constants.INVALID_DATE);
+			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
 		// 获取tbody内容
