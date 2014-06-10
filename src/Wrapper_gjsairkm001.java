@@ -1,5 +1,6 @@
-package com.zx.qunar;
 
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -17,13 +18,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
+import com.qunar.qfwrapper.bean.search.BaseFlightInfo;
 import com.qunar.qfwrapper.bean.search.FlightDetail;
 import com.qunar.qfwrapper.bean.search.FlightSearchParam;
 import com.qunar.qfwrapper.bean.search.FlightSegement;
 import com.qunar.qfwrapper.bean.search.OneWayFlightInfo;
 import com.qunar.qfwrapper.bean.search.ProcessResultInfo;
+import com.qunar.qfwrapper.bean.search.RoundTripFlightInfo;
 import com.qunar.qfwrapper.constants.Constants;
 import com.qunar.qfwrapper.interfaces.QunarCrawler;
 import com.qunar.qfwrapper.util.QFGetMethod;
@@ -31,17 +36,16 @@ import com.qunar.qfwrapper.util.QFHttpClient;
 import com.qunar.qfwrapper.util.QFPostMethod;
 
 /**
- * 马耳他航空单程抓取
+ * 马耳他航空往返 抓取
  * 
  * @author zhangx
  * 
  */
-public class Wrapper_gjdairkm001 implements QunarCrawler {
+public class Wrapper_gjsairkm001 implements QunarCrawler {
 	private static Logger logger = LoggerFactory
-			.getLogger(Wrapper_gjdairkm001.class);
+			.getLogger(Wrapper_gjsairkm001.class);
 
 	private static final String EXCEPTION_INFO = "excetpion";
-
 	// 获取最低票价，及税费
 	private static final String url = "https://reservations.airmalta.com/KMOnline/AirSelectOWCFlight.do";
 	// 表单提交界面
@@ -55,35 +59,38 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("CHQ");
+		searchParam.setDep("ATH");
 		searchParam.setArr("MLA");
 		searchParam.setDepDate("2014-07-28");
 		searchParam.setTimeOut("600000");
+		searchParam.setRetDate("2014-09-29");
 		searchParam.setToken("");
-		new Wrapper_gjdairkm001().run(searchParam);
+		new Wrapper_gjsairkm001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
+
 			/*
 			 * String filePath = "G:\\air.html"; File f = new File(filePath); if
 			 * (!f.exists()) { html = new
-			 * Wrapper_gjdaire8001().getHtml(searchParam); Files.write(html, f,
+			 * Wrapper_gjsairkm001().getHtml(searchParam); Files.write(html, f,
 			 * Charsets.UTF_8); } else { html = Files.toString(f,
 			 * Charsets.UTF_8); }
 			 */
-			html = new Wrapper_gjdairkm001().getHtml(searchParam);
+			html = new Wrapper_gjsairkm001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
-			result = new Wrapper_gjdairkm001().process(html, searchParam);
+			result = new Wrapper_gjsairkm001().process(html, searchParam);
 			if (result.isRet() && result.getStatus().equals(Constants.SUCCESS)) {
-				List<OneWayFlightInfo> flightList = (List<OneWayFlightInfo>) result
+				List<RoundTripFlightInfo> flightList = (List<RoundTripFlightInfo>) result
 						.getData();
-				for (OneWayFlightInfo in : flightList) {
-					System.out
-							.println("************" + in.getInfo().toString());
-					System.out.println("++++++++++++"
-							+ in.getDetail().toString());
+				for (RoundTripFlightInfo in : flightList) {
+					System.out.println("returnInfo"
+							+ in.getRetinfo().toString());
+					System.out.println("OWDetail:" + in.getDetail());
+					System.out.println("OWINFo:" + in.getInfo());
+					System.err.println("*****************************");
 				}
 			} else {
 				System.out.println(result.getStatus());
@@ -94,18 +101,23 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 	}
 
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
-		String[] dates = arg0.getDepDate().split("-");
+		String[] fromDate = arg0.getDepDate().split("-");
+		String[] returnDate = arg0.getRetDate().split("-");
+		String bookingUrlPre = "http://ashley4.com/webaccess/cityairways/fareresult.php";
 		BookingResult bookingResult = new BookingResult();
 		BookingInfo bookingInfo = new BookingInfo();
-		bookingInfo.setAction(postUrl);
+		bookingInfo.setAction(bookingUrlPre);
 		bookingInfo.setMethod("post");
 		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("outboundOption.originLocationCode", arg0.getDep());
 		map.put("outboundOption.destinationLocationCode", arg0.getArr());
-		map.put("outboundOption.departureDay", dates[2]);
-		map.put("outboundOption.departureMonth",dates[1]);
-		map.put("outboundOption.departureYear", dates[0]);
-		map.put("tripType", "OW");
+		map.put("outboundOption.departureDay", fromDate[2]);
+		map.put("outboundOption.departureMonth", fromDate[1]);
+		map.put("outboundOption.departureYear", fromDate[0]);
+		map.put("inboundOption.departureDay", returnDate[2]);
+		map.put("inboundOption.departureMonth", returnDate[1]);
+		map.put("inboundOption.departureYear", returnDate[0]);
+		map.put("tripType", "RT");
 		map.put("guestTypes[0].type", "ADT");
 		map.put("guestTypes[1].type", "CHD");
 		map.put("guestTypes[2].type", "INF");
@@ -134,7 +146,8 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			// 获取年月日
-			String[] dates = arg0.getDepDate().split("-");
+			String[] fromDate = arg0.getDepDate().split("-");
+			String[] returnDate = arg0.getRetDate().split("-");
 			post = new QFPostMethod(postUrl);
 			// 设置post提交表单数据
 			NameValuePair[] parametersBody = new NameValuePair[] {
@@ -142,10 +155,19 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 							arg0.getDep()),
 					new NameValuePair("outboundOption.destinationLocationCode",
 							arg0.getArr()),
-					new NameValuePair("outboundOption.departureDay", dates[2]),
-					new NameValuePair("outboundOption.departureMonth", dates[1]),
-					new NameValuePair("outboundOption.departureYear", dates[0]),
-					new NameValuePair("tripType", "OW"),
+					new NameValuePair("outboundOption.departureDay",
+							fromDate[2]),
+					new NameValuePair("outboundOption.departureMonth",
+							fromDate[1]),
+					new NameValuePair("outboundOption.departureYear",
+							fromDate[0]),
+					new NameValuePair("inboundOption.departureDay",
+							returnDate[2]),
+					new NameValuePair("inboundOption.departureMonth",
+							returnDate[1]),
+					new NameValuePair("inboundOption.departureYear",
+							returnDate[0]),
+					new NameValuePair("tripType", "RT"),
 					new NameValuePair("guestTypes[0].type", "ADT"),
 					new NameValuePair("guestTypes[1].type", "CHD"),
 					new NameValuePair("guestTypes[2].type", "INF"),
@@ -209,26 +231,73 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 	 * ，status可以为:CONNECTION_FAIL|INVALID_DATE|INVALID_AIRLINE|PARSING_FAIL
 	 * |PARAM_ERROR
 	 */
-	public ProcessResultInfo process(String arg0, FlightSearchParam arg1) {
-		String html = arg0;
-		String deptDate = arg1.getDepDate();// 首次出发时间
+	public ProcessResultInfo process(String html, FlightSearchParam arg1) {
 		ProcessResultInfo result = new ProcessResultInfo();
 		if ("Exception".equals(html)) {
 			result.setRet(false);
 			result.setStatus(Constants.CONNECTION_FAIL);
 			return result;
 		}
-		// 需要有明显的提示语句，才能判断是否INVALID_DATE|INVALID_AIRLINE|NO_RESULT
-		if (html.contains("Today Flight is full, select an other day or check later for any seat released. ")) {
+		if (html.contains("There are no flights available on your selected date(s), please choose other dates to continue")) {
 			result.setRet(false);
-			result.setStatus(Constants.INVALID_DATE);
+			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
 		// 获取tbody内容
-		String tbody = StringUtils
-				.substringBetween(html, "<tbody>", "</tbody>");
-		tbody = tbody.replace("\n", "").replace("\t", "")
+		String[] tbodys = StringUtils.substringsBetween(html, "<tbody>",
+				"</tbody>");
+		String tbody_oneWay = tbodys[0].replace("\n", "").replace("\t", "")
 				.replace("</tr></table>", "</java>");
+		String tbody_round = tbodys[1].replace("\n", "").replace("\t", "")
+				.replace("</tr></table>", "</java>");
+		// 单独获取航班信息，然后进行组合
+		// 单程
+		List<BaseFlightInfo> inway = getFlightInfoByStatus(tbody_oneWay, arg1,
+				0);
+		// 往返
+		List<BaseFlightInfo> outway = getFlightInfoByStatus(tbody_round, arg1,
+				1);
+		List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
+		//
+		for (BaseFlightInfo out : outway) {
+			for (BaseFlightInfo in : inway) {
+				RoundTripFlightInfo round = new RoundTripFlightInfo();
+				// 获取机票价格
+				String prices[] = getFlightPrice(in.getDetail().getSource(),
+						out.getDetail().getSource());
+				FlightDetail detail = in.getDetail();
+				detail.setPrice(new Double(prices[0]));// 票价
+				detail.setTax(new Double(prices[1]));// 税费
+				round.setDetail(detail);
+				round.setInfo(in.getInfo());
+				// 返程信息
+				round.setRetinfo(out.getInfo());
+				round.setRetdepdate(out.getDetail().getDepdate());
+				round.setRetflightno(out.getDetail().getFlightno());
+				roundTripFlightInfos.add(round);
+			}
+		}
+		result.setData(roundTripFlightInfos);
+		result.setStatus(Constants.SUCCESS);
+		result.setRet(true);
+		return result;
+	}
+
+	/**
+	 * 根据status判断单程or双程 0单程 1双程
+	 * 
+	 * @param tbody
+	 * @param arg1
+	 * @param status
+	 * @return
+	 */
+	public List<BaseFlightInfo> getFlightInfoByStatus(String tbody,
+			FlightSearchParam arg1, int status) {
+		// 首次出发时间
+		String deptDate = arg1.getDepDate();
+		if (status == 1) {
+			deptDate = arg1.getRetDate();
+		}
 		// 获取所有tr
 		String reg = "(<tr(.+?)>(.+?))</td></tr>";
 		Pattern pt = Pattern.compile(reg);
@@ -237,7 +306,7 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 		String divReg = "<div(.+?)>(.+?)</div>";
 		// 匹配a标签
 		pt = Pattern.compile(divReg);
-		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
+		List<BaseFlightInfo> flightList = new ArrayList<BaseFlightInfo>();
 		// 航班信息
 		List<FlightSegement> info = new ArrayList<FlightSegement>();
 		// 票价信息
@@ -324,58 +393,9 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 									.replace("\"", "");
 							String[] ids = divContent.split("_");
 							String idsValues = StringUtils.join(ids, ",");
-							idsValues = idsValues.substring(1,
-									idsValues.length());
-							QFPostMethod post = new QFPostMethod(url);
-							// 设置post提交表单数据
-							NameValuePair[] parametersBody = new NameValuePair[] {
-									new NameValuePair(
-											"isFareFamilySearchResult", "true"),
-									new NameValuePair("selectedItineraries",
-											idsValues),
-									new NameValuePair("selectedFlightIds",
-											idsValues),
-									new NameValuePair(
-											"combinabilityReloadRequired",
-											"false"),
-									new NameValuePair("flightIndex", ""),
-									new NameValuePair("flowStep",
-											"AIR_COMBINABLE_FARE_FAMILIES_FLEXIBLE_SEARCH_RESULTS"),
-									new NameValuePair("alignment", "horizontal"),
-									new NameValuePair("context", "airSelection") };
-							post.setRequestBody(parametersBody);
-
-							int status = httpClient.executeMethod(post);
-							if (status == HttpStatus.SC_OK) {
-								//
+							if (StringUtils.isBlank(detail.getSource())) {
+								detail.setSource(idsValues);
 							}
-							String body = post.getResponseBodyAsString();
-							body = StringUtils.substringBeforeLast(body, "/*");
-							JSONObject json = JSONObject.parseObject(body);
-							String data = json.getString("bottomBot");
-							data = StringUtils
-									.substringBeforeLast(data,
-											"<div class=\"bodySection collapsedSection\">");
-							data = StringUtils.substringAfterLast(data,
-									"<table");
-							String priceReg = "(\\d)+(\\.){1}\\d+";
-							Pattern pricePattern = Pattern.compile(priceReg);
-							Matcher priceMatcher = pricePattern.matcher(data);
-							int priceCount = 1;
-							while (priceMatcher.find()) {
-								String price = priceMatcher.group();
-								if (priceCount == 1) {// 获取票价
-									if (detail.getPrice() == 0.0) {
-										detail.setPrice(new Double(price));
-									}
-								} else if (priceCount == 3) {// 获取税费
-									if (detail.getTax() == 0.0) {
-										detail.setTax(new Double(price));
-									}
-								}
-								priceCount++;
-							}
-							post.releaseConnection();
 						}
 						break;
 					default:
@@ -386,17 +406,38 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 				// 根据此字段判断有转机情况
 				boolean flag = false;
 				// 添加完整信息
-				if ((seg.getDepairport().equals(arg1.getDep()) && seg
-						.getArrairport().equals(arg1.getArr()))) {
-					flag = true;
+				if (status == 0) {
+					// 正向时间比对
+					if ((seg.getDepairport().equals(arg1.getDep()) && seg
+							.getArrairport().equals(arg1.getArr()))) {
+						flag = true;
+					} else {
+						if (info.size() > 0) {
+							FlightSegement onSeg = (info.get(info.size() - 1));
+							if (onSeg.getDepairport().equals(arg1.getDep())
+									&& onSeg.getArrairport().equals(
+											seg.getDepairport())
+									&& seg.getArrairport()
+											.equals(arg1.getArr())) {
+								flag = true;
+							}
+						}
+					}
 				} else {
-					if (info.size() > 0) {
-						FlightSegement onSeg = (info.get(info.size() - 1));
-						if (onSeg.getDepairport().equals(arg1.getDep())
-								&& onSeg.getArrairport().equals(
-										seg.getDepairport())
-								&& seg.getArrairport().equals(arg1.getArr())) {
-							flag = true;
+					// 反向时间比对
+					if ((seg.getDepairport().equals(arg1.getArr()) && seg
+							.getArrairport().equals(arg1.getDep()))) {
+						flag = true;
+					} else {
+						if (info.size() > 0) {
+							FlightSegement onSeg = (info.get(info.size() - 1));
+							if (onSeg.getDepairport().equals(arg1.getArr())
+									&& onSeg.getArrairport().equals(
+											seg.getDepairport())
+									&& seg.getArrairport()
+											.equals(arg1.getDep())) {
+								flag = true;
+							}
 						}
 					}
 				}
@@ -417,19 +458,67 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 					oneWayFlightInfo.setDetail(detail);
 					oneWayFlightInfo.setInfo(info);
 					flightList.add(oneWayFlightInfo);
-					detail.setWrapperid("gjdairkm001");
+					detail.setWrapperid("gjsairkm001");
 					detail = new FlightDetail();
 					info = new ArrayList<FlightSegement>();
 				}
 			}
-			result.setStatus(Constants.SUCCESS);
-			result.setData(flightList);
-			result.setRet(true);
 		} catch (Exception e) {
-			result.setStatus(Constants.PARSING_FAIL);
-			result.setRet(false);
 			e.printStackTrace();
 		}
-		return result;
+		return flightList;
+	}
+
+	public String[] getFlightPrice(String fromIds, String toIds) {
+		String[] prices = new String[2];
+		QFPostMethod post = null;
+		String idsValues = fromIds + toIds;
+		idsValues = idsValues.substring(1, idsValues.length()).replace(" ", "");
+		try {
+			post = new QFPostMethod(url);
+			// 设置post提交表单数据
+			NameValuePair[] parametersBody = new NameValuePair[] {
+					new NameValuePair("isFareFamilySearchResult", "true"),
+					new NameValuePair("selectedItineraries", fromIds),
+					new NameValuePair("selectedItineraries", toIds),
+					new NameValuePair("selectedFlightIds", idsValues),
+					new NameValuePair("combinabilityReloadRequired", "true"),
+					new NameValuePair("flightIndex", ""),
+					new NameValuePair("flowStep",
+							"AIR_COMBINABLE_FARE_FAMILIES_FLEXIBLE_SEARCH_RESULTS"),
+					new NameValuePair("alignment", "horizontal"),
+					new NameValuePair("context", "airSelection") };
+			post.setRequestBody(parametersBody);
+
+			int status = httpClient.executeMethod(post);
+			if (status == HttpStatus.SC_OK) {
+				//
+			}
+			String body = post.getResponseBodyAsString();
+			body = StringUtils.substringBeforeLast(body, "/*");
+			JSONObject json = JSONObject.parseObject(body);
+			String data = json.getString("bottomBot");
+			data = StringUtils.substringBeforeLast(data,
+					"<div class=\"bodySection collapsedSection\">");
+			data = StringUtils.substringAfterLast(data, "<table");
+			String priceReg = "(\\d)+(\\.){1}\\d+";
+			Pattern pricePattern = Pattern.compile(priceReg);
+			Matcher priceMatcher = pricePattern.matcher(data);
+			int priceCount = 1;
+			while (priceMatcher.find()) {
+				String price = priceMatcher.group();
+				if (priceCount == 1) {// 获取票价
+					prices[0] = price;
+				} else if (priceCount == 3) {// 获取税费
+					prices[1] = price;
+				}
+				priceCount++;
+			}
+		} catch (Exception e) {
+
+		} finally {
+			post.releaseConnection();
+		}
+		return prices;
 	}
 }
