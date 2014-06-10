@@ -94,25 +94,28 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 	}
 
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
-
-		String bookingUrlPre = "http://ashley4.com/webaccess/cityairways/fareresult.php";
+		String[] dates = arg0.getDepDate().split("-");
 		BookingResult bookingResult = new BookingResult();
-
 		BookingInfo bookingInfo = new BookingInfo();
-		bookingInfo.setAction(bookingUrlPre);
+		bookingInfo.setAction(postUrl);
 		bookingInfo.setMethod("post");
 		Map<String, String> map = new LinkedHashMap<String, String>();
-		map.put("ro", "0");
-		map.put("from", arg0.getDep());
-		map.put("to", arg0.getArr());
-		map.put("cur", "HKD");
-		map.put("sdate", arg0.getDepDate().replaceAll("-", "/"));
-		map.put("edate", arg0.getDepDate().replaceAll("-", "/"));
-		map.put("adult", "1");
-		map.put("child", "0");
-		map.put("infant", "0");
-		map.put("view", "0");
-		map.put("btnsubmit", "Flight Search");
+		map.put("outboundOption.originLocationCode", arg0.getDep());
+		map.put("outboundOption.destinationLocationCode", arg0.getArr());
+		map.put("outboundOption.departureDay", dates[2]);
+		map.put("outboundOption.departureMonth",dates[1]);
+		map.put("outboundOption.departureYear", dates[0]);
+		map.put("tripType", "OW");
+		map.put("guestTypes[0].type", "ADT");
+		map.put("guestTypes[1].type", "CHD");
+		map.put("guestTypes[2].type", "INF");
+		map.put("guestTypes[0].amount", "1");
+		map.put("guestTypes[1].amount", "0");
+		map.put("guestTypes[2].amount", "0");
+		map.put("flexibleSearch", "true");
+		map.put("lang", "en");
+		map.put("pos", "AIRMALTA");
+		map.put("directFlightsOnly", "false");
 		bookingInfo.setInputs(map);
 		bookingResult.setData(bookingInfo);
 		bookingResult.setRet(true);

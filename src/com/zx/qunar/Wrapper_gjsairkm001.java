@@ -101,25 +101,33 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 	}
 
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
-
+		String[] fromDate = arg0.getDepDate().split("-");
+		String[] returnDate = arg0.getRetDate().split("-");
 		String bookingUrlPre = "http://ashley4.com/webaccess/cityairways/fareresult.php";
 		BookingResult bookingResult = new BookingResult();
-
 		BookingInfo bookingInfo = new BookingInfo();
 		bookingInfo.setAction(bookingUrlPre);
 		bookingInfo.setMethod("post");
 		Map<String, String> map = new LinkedHashMap<String, String>();
-		map.put("ro", "0");
-		map.put("from", arg0.getDep());
-		map.put("to", arg0.getArr());
-		map.put("cur", "HKD");
-		map.put("sdate", arg0.getDepDate().replaceAll("-", "/"));
-		map.put("edate", arg0.getDepDate().replaceAll("-", "/"));
-		map.put("adult", "1");
-		map.put("child", "0");
-		map.put("infant", "0");
-		map.put("view", "0");
-		map.put("btnsubmit", "Flight Search");
+		map.put("outboundOption.originLocationCode", arg0.getDep());
+		map.put("outboundOption.destinationLocationCode", arg0.getArr());
+		map.put("outboundOption.departureDay", fromDate[2]);
+		map.put("outboundOption.departureMonth", fromDate[1]);
+		map.put("outboundOption.departureYear", fromDate[0]);
+		map.put("inboundOption.departureDay", returnDate[2]);
+		map.put("inboundOption.departureMonth", returnDate[1]);
+		map.put("inboundOption.departureYear", returnDate[0]);
+		map.put("tripType", "RT");
+		map.put("guestTypes[0].type", "ADT");
+		map.put("guestTypes[1].type", "CHD");
+		map.put("guestTypes[2].type", "INF");
+		map.put("guestTypes[0].amount", "1");
+		map.put("guestTypes[1].amount", "0");
+		map.put("guestTypes[2].amount", "0");
+		map.put("flexibleSearch", "true");
+		map.put("lang", "en");
+		map.put("pos", "AIRMALTA");
+		map.put("directFlightsOnly", "false");
 		bookingInfo.setInputs(map);
 		bookingResult.setData(bookingInfo);
 		bookingResult.setRet(true);
@@ -230,7 +238,7 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			result.setStatus(Constants.CONNECTION_FAIL);
 			return result;
 		}
-		if(html.contains("There are no flights available on your selected date(s), please choose other dates to continue")){
+		if (html.contains("There are no flights available on your selected date(s), please choose other dates to continue")) {
 			result.setRet(false);
 			result.setStatus(Constants.NO_RESULT);
 			return result;
