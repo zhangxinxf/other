@@ -1,3 +1,4 @@
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -15,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.FlightDetail;
@@ -53,7 +56,7 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("BRS");
+		searchParam.setDep("CHQ");
 		searchParam.setArr("MLA");
 		searchParam.setDepDate("2014-07-15");
 		searchParam.setTimeOut("600000");
@@ -64,13 +67,16 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-			/*
-			 * String filePath = "G:\\air.html"; File f = new File(filePath); if
-			 * (!f.exists()) { html = new
-			 * Wrapper_gjdaire8001().getHtml(searchParam); Files.write(html, f,
-			 * Charsets.UTF_8); } else { html = Files.toString(f,
-			 * Charsets.UTF_8); }
-			 */
+
+			String filePath = "G:\\air.html";
+			File f = new File(filePath);
+			if (!f.exists()) {
+				html = new Wrapper_gjdairkm001().getHtml(searchParam);
+				Files.write(html, f, Charsets.UTF_8);
+			} else {
+				html = Files.toString(f, Charsets.UTF_8);
+			}
+
 			html = new Wrapper_gjdairkm001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
 			result = new Wrapper_gjdairkm001().process(html, searchParam);
@@ -220,7 +226,7 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 			return result;
 		}
 		// 需要有明显的提示语句，才能判断是否INVALID_DATE|INVALID_AIRLINE|NO_RESULT
-		if (html.contains("Today Flight is full, select an other day or check later for any seat released. ")) {
+		if (html.contains("There are no flights available on your selected date(s), please choose other dates to continue")) {
 			result.setRet(false);
 			result.setStatus(Constants.NO_RESULT);
 			return result;
