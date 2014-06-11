@@ -54,11 +54,11 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("BCN");
+		searchParam.setDep("CHQ");
 		searchParam.setArr("MLA");
-		searchParam.setDepDate("2014-07-19");
+		searchParam.setDepDate("2014-07-28");
 		searchParam.setTimeOut("600000");
-		searchParam.setRetDate("2014-07-23");
+		searchParam.setRetDate("2014-09-26");
 		searchParam.setToken("");
 		new Wrapper_gjsairkm001().run(searchParam);
 	}
