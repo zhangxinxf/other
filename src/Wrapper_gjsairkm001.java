@@ -1,3 +1,4 @@
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -15,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.BaseFlightInfo;
@@ -67,13 +70,15 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 		String html = "";
 		try {
 
-			/*
-			 * String filePath = "G:\\air.html"; File f = new File(filePath); if
-			 * (!f.exists()) { html = new
-			 * Wrapper_gjsairkm001().getHtml(searchParam); Files.write(html, f,
-			 * Charsets.UTF_8); } else { html = Files.toString(f,
-			 * Charsets.UTF_8); }
-			 */
+			/*String filePath = "G:\\air.html";
+			File f = new File(filePath);
+			if (!f.exists()) {
+				html = new Wrapper_gjsairkm001().getHtml(searchParam);
+				Files.write(html, f, Charsets.UTF_8);
+			} else {
+				html = Files.toString(f, Charsets.UTF_8);
+			}*/
+
 			long startTime = System.currentTimeMillis();
 			html = new Wrapper_gjsairkm001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
@@ -195,6 +200,10 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			ajaxResponseBody = ajaxResponseBody.substring(0,
 					ajaxResponseBody.indexOf("/*"));
 			JSONObject ajaxJson = JSONObject.parseObject(ajaxResponseBody);
+			String errorInfo = ajaxJson.getString("errors");
+			if (!StringUtils.isBlank(errorInfo)) {
+				return Constants.INVALID_AIRLINE;
+			}
 			String redirect = ajaxJson.getString("redirect");
 			String status = ajaxJson.getString("status");
 			if (StringUtils.isBlank(status) || !status.equals("success")) {
@@ -230,14 +239,24 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 	 */
 	public ProcessResultInfo process(String html, FlightSearchParam arg1) {
 		ProcessResultInfo result = new ProcessResultInfo();
-		if ("Exception".equals(html)) {
+		if (EXCEPTION_INFO.equals(html)) {
 			result.setRet(false);
 			result.setStatus(Constants.CONNECTION_FAIL);
+			return result;
+		}
+		if(html.equals(Constants.INVALID_AIRLINE)){
+			result.setRet(false);
+			result.setStatus(Constants.INVALID_AIRLINE);
 			return result;
 		}
 		if (html.contains("There are no flights available on your selected date(s), please choose other dates to continue")) {
 			result.setRet(false);
 			result.setStatus(Constants.NO_RESULT);
+			return result;
+		}
+		if(html.contains("No flights found according to your search criteria. Please try again.")){
+			result.setRet(false);
+			result.setStatus(Constants.INVALID_AIRLINE);
 			return result;
 		}
 		// 获取tbody内容
@@ -488,7 +507,7 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 					// 添加明细信息
 					detail.setDepcity(arg1.getDep());
 					detail.setArrcity(arg1.getArr());
-					detail.setDepdate(dateFormat.parse(arg1.getDepDate()));
+					detail.setDepdate(dateFormat.parse(deptDate));
 					// 获取航班号
 					List<String> flightno = new ArrayList<String>();
 					for (FlightSegement flightSegement : info) {

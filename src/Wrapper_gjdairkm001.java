@@ -1,3 +1,4 @@
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -15,6 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.FlightDetail;
@@ -53,7 +56,7 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("BRS");
+		searchParam.setDep("BCN");
 		searchParam.setArr("MLA");
 		searchParam.setDepDate("2014-07-15");
 		searchParam.setTimeOut("600000");
@@ -64,13 +67,15 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
+
 			/*
 			 * String filePath = "G:\\air.html"; File f = new File(filePath); if
 			 * (!f.exists()) { html = new
-			 * Wrapper_gjdaire8001().getHtml(searchParam); Files.write(html, f,
+			 * Wrapper_gjdairkm001().getHtml(searchParam); Files.write(html, f,
 			 * Charsets.UTF_8); } else { html = Files.toString(f,
 			 * Charsets.UTF_8); }
 			 */
+
 			html = new Wrapper_gjdairkm001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
 			result = new Wrapper_gjdairkm001().process(html, searchParam);
@@ -177,6 +182,10 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 			ajaxResponseBody = ajaxResponseBody.substring(0,
 					ajaxResponseBody.indexOf("/*"));
 			JSONObject ajaxJson = JSONObject.parseObject(ajaxResponseBody);
+			String errorInfo = ajaxJson.getString("errors");
+			if (!StringUtils.isBlank(errorInfo)) {
+				return Constants.INVALID_AIRLINE;
+			}
 			String redirect = ajaxJson.getString("redirect");
 			String status = ajaxJson.getString("status");
 			if (StringUtils.isBlank(status) || !status.equals("success")) {
@@ -214,13 +223,23 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 		String html = arg0;
 		String deptDate = arg1.getDepDate();// 首次出发时间
 		ProcessResultInfo result = new ProcessResultInfo();
-		if ("Exception".equals(html)) {
+		if (EXCEPTION_INFO.equals(html)) {
 			result.setRet(false);
 			result.setStatus(Constants.CONNECTION_FAIL);
 			return result;
 		}
+		if (html.equals(Constants.INVALID_AIRLINE)) {
+			result.setRet(false);
+			result.setStatus(Constants.INVALID_AIRLINE);
+			return result;
+		}
+		if (html.contains("No flights found according to your search criteria. Please try again.")) {
+			result.setRet(false);
+			result.setStatus(Constants.INVALID_AIRLINE);
+			return result;
+		}
 		// 需要有明显的提示语句，才能判断是否INVALID_DATE|INVALID_AIRLINE|NO_RESULT
-		if (html.contains("Today Flight is full, select an other day or check later for any seat released. ")) {
+		if (html.contains("There are no flights available on your selected date(s), please choose other dates to continue")) {
 			result.setRet(false);
 			result.setStatus(Constants.NO_RESULT);
 			return result;
