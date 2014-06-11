@@ -54,11 +54,11 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("BCN");
+		searchParam.setDep("CHQ");
 		searchParam.setArr("MLA");
-		searchParam.setDepDate("2014-07-19");
+		searchParam.setDepDate("2014-07-28");
 		searchParam.setTimeOut("600000");
-		searchParam.setRetDate("2014-07-23");
+		searchParam.setRetDate("2014-09-26");
 		searchParam.setToken("");
 		new Wrapper_gjsairkm001().run(searchParam);
 	}
@@ -488,7 +488,7 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 					// 添加明细信息
 					detail.setDepcity(arg1.getDep());
 					detail.setArrcity(arg1.getArr());
-					detail.setDepdate(dateFormat.parse(arg1.getDepDate()));
+					detail.setDepdate(dateFormat.parse(deptDate));
 					// 获取航班号
 					List<String> flightno = new ArrayList<String>();
 					for (FlightSegement flightSegement : info) {
