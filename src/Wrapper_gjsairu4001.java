@@ -1,4 +1,3 @@
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -13,8 +12,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.BaseFlightInfo;
@@ -44,7 +41,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 
 	// 表单提交界面
 	private static final String postUrl = "http://buddhaair.com/booking";
-
+	private static final String filghtPrefix = "U4";
 	private static QFHttpClient httpClient = null;
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
@@ -67,14 +64,14 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 		String html = "";
 		try {
 
-//			String filePath = "G:\\air.html";
-//			File f = new File(filePath);
-//			if (!f.exists()) {
-//				html = new Wrapper_gjsairu4001().getHtml(searchParam);
-//				Files.write(html, f, Charsets.UTF_8);
-//			} else {
-//				html = Files.toString(f, Charsets.UTF_8);
-//			}
+			// String filePath = "G:\\air.html";
+			// File f = new File(filePath);
+			// if (!f.exists()) {
+			// html = new Wrapper_gjsairu4001().getHtml(searchParam);
+			// Files.write(html, f, Charsets.UTF_8);
+			// } else {
+			// html = Files.toString(f, Charsets.UTF_8);
+			// }
 
 			html = new Wrapper_gjsairu4001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
@@ -220,7 +217,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 		List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
 		try {
 			// 获取tbody内容
- 			String[] tbody = StringUtils.substringsBetween(html, "<tbody>",
+			String[] tbody = StringUtils.substringsBetween(html, "<tbody>",
 					"</tbody>");
 			// 获取所有tr
 			String[] intrs = StringUtils.substringsBetween(tbody[0], "<tr>",
@@ -299,7 +296,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 				// 解析html界面
 				String[] ligInfos = StringUtils.substringsBetween(content,
 						"<td>", "</td>");
-				String FlightNo = ligInfos[0];// 航班号
+				String FlightNo = filghtPrefix + ligInfos[0];// 航班号
 				String depTime = ligInfos[1];// 起飞时间
 				String arrTime = ligInfos[2];// 到达时间
 				String[] price = ligInfos[3].split("\\$");// 票价
@@ -307,7 +304,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 				String[] tax = ligInfos[5].split("\\$");
 				//
 				fliNo.add(FlightNo);
-				//
+				// 简要
 				detail.setMonetaryunit(price[0].trim());
 				detail.setPrice(new Double(price[1]));
 				detail.setDepcity(arg1.getDep());
