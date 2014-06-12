@@ -17,11 +17,13 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
+import com.qunar.qfwrapper.bean.search.BaseFlightInfo;
 import com.qunar.qfwrapper.bean.search.FlightDetail;
 import com.qunar.qfwrapper.bean.search.FlightSearchParam;
 import com.qunar.qfwrapper.bean.search.FlightSegement;
 import com.qunar.qfwrapper.bean.search.OneWayFlightInfo;
 import com.qunar.qfwrapper.bean.search.ProcessResultInfo;
+import com.qunar.qfwrapper.bean.search.RoundTripFlightInfo;
 import com.qunar.qfwrapper.constants.Constants;
 import com.qunar.qfwrapper.interfaces.QunarCrawler;
 import com.qunar.qfwrapper.util.QFGetMethod;
@@ -34,9 +36,9 @@ import com.qunar.qfwrapper.util.QFPostMethod;
  * @author zhangx
  * 
  */
-public class Wrapper_gjdairu4001 implements QunarCrawler {
+public class Wrapper_gjsairu4001 implements QunarCrawler {
 	private static Logger logger = LoggerFactory
-			.getLogger(Wrapper_gjdairu4001.class);
+			.getLogger(Wrapper_gjsairu4001.class);
 
 	private static final String EXCEPTION_INFO = "excetpion";
 
@@ -54,34 +56,38 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 		FlightSearchParam searchParam = new FlightSearchParam();
 		searchParam.setDep("KEP");
 		searchParam.setArr("KTM");
-		searchParam.setDepDate("2014-06-24");
+		searchParam.setDepDate("2014-07-24");
+		searchParam.setRetDate("2014-7-31");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
-		new Wrapper_gjdairu4001().run(searchParam);
+		new Wrapper_gjsairu4001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-			
-			  String filePath = "G:\\air.html"; File f = new File(filePath); if
-			  (!f.exists()) { html = new
-			  Wrapper_gjdairu4001().getHtml(searchParam); Files.write(html, f,
-			  Charsets.UTF_8); } else { html = Files.toString(f,
-			  Charsets.UTF_8); }
-			 
 
-			html = new Wrapper_gjdairu4001().getHtml(searchParam);
+//			String filePath = "G:\\air.html";
+//			File f = new File(filePath);
+//			if (!f.exists()) {
+//				html = new Wrapper_gjsairu4001().getHtml(searchParam);
+//				Files.write(html, f, Charsets.UTF_8);
+//			} else {
+//				html = Files.toString(f, Charsets.UTF_8);
+//			}
+
+			html = new Wrapper_gjsairu4001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
-			result = new Wrapper_gjdairu4001().process(html, searchParam);
+			result = new Wrapper_gjsairu4001().process(html, searchParam);
 			if (result.isRet() && result.getStatus().equals(Constants.SUCCESS)) {
-				List<OneWayFlightInfo> flightList = (List<OneWayFlightInfo>) result
+				List<RoundTripFlightInfo> flightList = (List<RoundTripFlightInfo>) result
 						.getData();
-				for (OneWayFlightInfo in : flightList) {
-					System.out
-							.println("************" + in.getInfo().toString());
-					System.out.println("++++++++++++"
-							+ in.getDetail().toString());
+				for (RoundTripFlightInfo in : flightList) {
+					System.out.println("returnInfo"
+							+ in.getRetinfo().toString());
+					System.out.println("OWDetail:" + in.getDetail());
+					System.out.println("OWINFo:" + in.getInfo());
+					System.err.println("*****************************");
 				}
 			} else {
 				System.out.println(result.getStatus());
@@ -98,17 +104,22 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 		bookingInfo.setMethod("post");
 		// 时间处理
 		String[] serachDepDate = arg0.getDepDate().split("-");
+		String[] serachArrDate = arg0.getArr().split("-");
 		String depDate = serachDepDate[2]
 				+ MONTHS[Integer.parseInt(serachDepDate[1]) - 1]
 				+ serachDepDate[0];
+		String arrDate = serachArrDate[2]
+				+ MONTHS[Integer.parseInt(serachArrDate[1]) - 1]
+				+ serachArrDate[0];
 		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("depart", arg0.getDep());
 		map.put("arrival", arg0.getArr());
-		map.put("trip_type", "0");
+		map.put("trip_type", "1");
 		map.put("adult", "1");
 		map.put("child", "0");
 		map.put("bookingtype", "H");
 		map.put("flight_departure_date", depDate);
+		map.put("return_date", arrDate);
 		bookingInfo.setInputs(map);
 		bookingResult.setData(bookingInfo);
 		bookingResult.setRet(true);
@@ -126,18 +137,24 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			post = new QFPostMethod(postUrl);
+			// 时间处理
 			String[] serachDepDate = arg0.getDepDate().split("-");
+			String[] serachArrDate = arg0.getRetDate().split("-");
 			String depDate = serachDepDate[2]
 					+ MONTHS[Integer.parseInt(serachDepDate[1]) - 1]
 					+ serachDepDate[0];
+			String arrDate = serachArrDate[2]
+					+ MONTHS[Integer.parseInt(serachArrDate[1]) - 1]
+					+ serachArrDate[0];
 			// 设置post提交表单数据
 			NameValuePair[] parametersBody = new NameValuePair[] {
 					new NameValuePair("depart", arg0.getDep()),
 					new NameValuePair("arrival", arg0.getArr()),
-					new NameValuePair("trip_type", "0"),
+					new NameValuePair("trip_type", "1"),
 					new NameValuePair("adult", "1"),
 					new NameValuePair("child", "0"),
 					new NameValuePair("bookingtype", "H"),
+					new NameValuePair("return_date", arrDate),
 					new NameValuePair("flight_departure_date", depDate) };
 			post.setRequestBody(parametersBody);
 			post.setFollowRedirects(false);
@@ -188,7 +205,6 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 	 */
 	public ProcessResultInfo process(String arg0, FlightSearchParam arg1) {
 		String html = arg0;
-		String deptDate = arg1.getDepDate();// 首次出发时间
 		ProcessResultInfo result = new ProcessResultInfo();
 		if (EXCEPTION_INFO.equals(html)) {
 			result.setRet(false);
@@ -201,14 +217,79 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
-		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
+		List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
 		try {
 			// 获取tbody内容
-			String tbody = StringUtils.substringBetween(html, "<tbody>",
+			String[] tbody = StringUtils.substringsBetween(html, "<tbody>",
 					"</tbody>");
 			// 获取所有tr
-			String[] trs = StringUtils
-					.substringsBetween(tbody, "<tr>", "</tr>");
+			String[] intrs = StringUtils.substringsBetween(tbody[0], "<tr>",
+					"</tr>");
+			String[] ontrs = StringUtils.substringsBetween(tbody[1], "<tr>",
+					"</tr>");
+			// 单程
+			List<BaseFlightInfo> inway = getFlightInfoByStatus(intrs, arg1, 0);
+			// 往返
+			List<BaseFlightInfo> outway = getFlightInfoByStatus(ontrs, arg1, 1);
+			//
+			for (BaseFlightInfo out : outway) {
+				double outprice = out.getDetail().getPrice();
+				double outTax = out.getDetail().getTax();
+				for (BaseFlightInfo in : inway) {
+					RoundTripFlightInfo round = new RoundTripFlightInfo();
+					// 获取机票价格
+					double inprice = in.getDetail().getPrice();
+					double inTax = in.getDetail().getTax();
+
+					double totalprice = inprice + outprice;
+					double totalTax = outTax + inTax;
+					FlightDetail detail = in.getDetail();
+					detail.setPrice(new Double(String
+							.format("%.2f", totalprice)));// 票价
+					detail.setTax(new Double(String.format("%.2f", totalTax)));// 税费
+					round.setDetail(detail);
+					round.setInfo(in.getInfo());
+					// 返程信息
+					round.setRetinfo(out.getInfo());
+					round.setRetdepdate(out.getDetail().getDepdate());
+					round.setRetflightno(out.getDetail().getFlightno());
+					roundTripFlightInfos.add(round);
+				}
+			}
+			result.setData(roundTripFlightInfos);
+			result.setStatus(Constants.SUCCESS);
+			result.setRet(true);
+			return result;
+
+		} catch (Exception e) {
+			result.setRet(false);
+			result.setStatus(Constants.PARSING_FAIL);
+			e.printStackTrace();
+		}
+		result.setRet(true);
+		result.setStatus(Constants.SUCCESS);
+		result.setData(roundTripFlightInfos);
+		return result;
+	}
+
+	/**
+	 * 根据status判断单程or双程 0单程 1双程
+	 * 
+	 * @param tbody
+	 * @param arg1
+	 * @param status
+	 * @return
+	 */
+	public List<BaseFlightInfo> getFlightInfoByStatus(String[] trs,
+			FlightSearchParam arg1, int status) throws Exception {
+
+		List<BaseFlightInfo> flightList = new ArrayList<BaseFlightInfo>();
+		// 首次出发时间
+		String deptDate = arg1.getDepDate();
+		if (status == 1) {
+			deptDate = arg1.getRetDate();
+		}
+		try {
 			for (String content : trs) {
 				List<FlightSegement> info = new ArrayList<FlightSegement>();
 				List<String> fliNo = new ArrayList<String>();
@@ -234,7 +315,7 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 				detail.setTax(new Double(tax[1]) + new Double(fuelCharge[1]));
 				detail.setFlightno(fliNo);
 				detail.setDepdate(dateFormat.parse(deptDate));
-				detail.setWrapperid("gjdairu4001");
+				detail.setWrapperid("gjsairu4001");
 				// 航班信息
 				flightSegement.setArrairport(arg1.getArr());
 				flightSegement.setDepairport(arg1.getDep());
@@ -250,13 +331,9 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 				flightList.add(oneWayFlightInfo);
 			}
 		} catch (Exception e) {
-			result.setRet(false);
-			result.setStatus(Constants.PARSING_FAIL);
-			e.printStackTrace();
+			throw new Exception(e);
 		}
-		result.setRet(true);
-		result.setStatus(Constants.SUCCESS);
-		result.setData(flightList);
-		return result;
+		return flightList;
 	}
+
 }
