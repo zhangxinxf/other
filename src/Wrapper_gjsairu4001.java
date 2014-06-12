@@ -54,10 +54,10 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("KEP");
-		searchParam.setArr("KTM");
-		searchParam.setDepDate("2014-07-24");
-		searchParam.setRetDate("2014-7-31");
+		searchParam.setDep("KTM");
+		searchParam.setArr("JKR");
+		searchParam.setDepDate("2014-07-19");
+		searchParam.setRetDate("2014-07-23");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
 		new Wrapper_gjsairu4001().run(searchParam);
@@ -104,7 +104,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 		bookingInfo.setMethod("post");
 		// 时间处理
 		String[] serachDepDate = arg0.getDepDate().split("-");
-		String[] serachArrDate = arg0.getArr().split("-");
+		String[] serachArrDate = arg0.getRetDate().split("-");
 		String depDate = serachDepDate[2]
 				+ MONTHS[Integer.parseInt(serachDepDate[1]) - 1]
 				+ serachDepDate[0];
@@ -220,7 +220,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 		List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
 		try {
 			// 获取tbody内容
-			String[] tbody = StringUtils.substringsBetween(html, "<tbody>",
+ 			String[] tbody = StringUtils.substringsBetween(html, "<tbody>",
 					"</tbody>");
 			// 获取所有tr
 			String[] intrs = StringUtils.substringsBetween(tbody[0], "<tr>",

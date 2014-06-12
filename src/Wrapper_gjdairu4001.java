@@ -52,9 +52,9 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("KEP");
-		searchParam.setArr("KTM");
-		searchParam.setDepDate("2014-06-24");
+		searchParam.setDep("KTM");
+		searchParam.setArr("JKR");
+		searchParam.setDepDate("2014-07-19");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
 		new Wrapper_gjdairu4001().run(searchParam);
@@ -218,14 +218,14 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 				// 解析html界面
 				String[] ligInfos = StringUtils.substringsBetween(content,
 						"<td>", "</td>");
-				String FlightNo = ligInfos[0];// 航班号
+				String flightNo = ligInfos[0];// 航班号
 				String depTime = ligInfos[1];// 起飞时间
 				String arrTime = ligInfos[2];// 到达时间
 				String[] price = ligInfos[3].split("\\$");// 票价
 				String[] fuelCharge = ligInfos[4].split("\\$");
 				String[] tax = ligInfos[5].split("\\$");
 				//
-				fliNo.add(FlightNo);
+				fliNo.add(flightNo);
 				//
 				detail.setMonetaryunit(price[0].trim());
 				detail.setPrice(new Double(price[1]));
@@ -242,7 +242,7 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 				flightSegement.setDeptime(depTime);
 				flightSegement.setDepDate(deptDate);
 				flightSegement.setArrDate(deptDate);
-				flightSegement.setFlightno(FlightNo);
+				flightSegement.setFlightno(flightNo);
 				//
 				info.add(flightSegement);
 				oneWayFlightInfo.setDetail(detail);
