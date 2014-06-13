@@ -41,7 +41,6 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 
 	// 表单提交界面
 	private static final String postUrl = "http://buddhaair.com/booking";
-	private static final String filghtPrefix = "U4";
 	private static QFHttpClient httpClient = null;
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
@@ -291,14 +290,18 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 				// 解析html界面
 				String[] ligInfos = StringUtils.substringsBetween(content,
 						"<td>", "</td>");
-				String FlightNo = filghtPrefix + ligInfos[0];// 航班号
+				// 获取航空二字码
+				String flightNo = StringUtils.substringBetween(ligInfos[6],
+						"<input type=\"hidden\" name=\"airline[]\" value=\"",
+						"\" />");
+				flightNo = flightNo + ligInfos[0];// 航班号
 				String depTime = ligInfos[1];// 起飞时间
 				String arrTime = ligInfos[2];// 到达时间
 				String[] price = ligInfos[3].split("\\$");// 票价
 				String[] fuelCharge = ligInfos[4].split("\\$");
 				String[] tax = ligInfos[5].split("\\$");
 				//
-				fliNo.add(FlightNo);
+				fliNo.add(flightNo);
 				// 简要
 				detail.setMonetaryunit(price[0].trim());
 				detail.setPrice(new Double(price[1]));
@@ -315,7 +318,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 				flightSegement.setDeptime(depTime);
 				flightSegement.setDepDate(deptDate);
 				flightSegement.setArrDate(deptDate);
-				flightSegement.setFlightno(FlightNo);
+				flightSegement.setFlightno(flightNo);
 				//
 				info.add(flightSegement);
 				oneWayFlightInfo.setDetail(detail);

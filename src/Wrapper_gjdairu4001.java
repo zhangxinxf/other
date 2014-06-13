@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.FlightDetail;
@@ -42,8 +43,6 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 
 	// 表单提交界面
 	private static final String postUrl = "http://buddhaair.com/booking";
-	// 航班号前缀
-	private static final String filghtPrefix = "U4";
 	private static QFHttpClient httpClient = null;
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
@@ -64,15 +63,15 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-//
-//			String filePath = "G:\\air.html";
-//			File f = new File(filePath);
-//			if (!f.exists()) {
-//				html = new Wrapper_gjdairu4001().getHtml(searchParam);
-//				Files.write(html, f, Charsets.UTF_8);
-//			} else {
-//				html = Files.toString(f, Charsets.UTF_8);
-//			}
+			//
+			// String filePath = "G:\\air.html";
+			// File f = new File(filePath);
+			// if (!f.exists()) {
+			// html = new Wrapper_gjdairu4001().getHtml(searchParam);
+			// Files.write(html, f, Charsets.UTF_8);
+			// } else {
+			// html = Files.toString(f, Charsets.UTF_8);
+			// }
 
 			html = new Wrapper_gjdairu4001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
@@ -221,16 +220,25 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 				// 解析html界面
 				String[] ligInfos = StringUtils.substringsBetween(content,
 						"<td>", "</td>");
-				String flightNo =filghtPrefix+ligInfos[0];// 航班号
+				String flightNo = StringUtils.substringBetween(ligInfos[6],
+						"<input type=\"hidden\" name=\"airline[]\" value=\"",
+						"\" />");
+				flightNo = flightNo + ligInfos[0];// 航班号
 				String depTime = ligInfos[1];// 起飞时间
 				String arrTime = ligInfos[2];// 到达时间
 				String[] price = ligInfos[3].split("\\$");// 票价
 				String[] fuelCharge = ligInfos[4].split("\\$");
 				String[] tax = ligInfos[5].split("\\$");
+
 				//
 				fliNo.add(flightNo);
-				//
-				detail.setMonetaryunit(price[0].trim());
+
+				// 设置货币单位
+				String monetaryunit = price[0].trim();
+				if (monetaryunit.equals("US")) {
+					monetaryunit = "USD";
+				}
+				detail.setMonetaryunit(monetaryunit);
 				detail.setPrice(new Double(price[1]));
 				detail.setDepcity(arg1.getDep());
 				detail.setArrcity(arg1.getArr());
