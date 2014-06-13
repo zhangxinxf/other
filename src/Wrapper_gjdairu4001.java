@@ -64,15 +64,15 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-
-			String filePath = "G:\\air.html";
-			File f = new File(filePath);
-			if (!f.exists()) {
-				html = new Wrapper_gjdairu4001().getHtml(searchParam);
-				Files.write(html, f, Charsets.UTF_8);
-			} else {
-				html = Files.toString(f, Charsets.UTF_8);
-			}
+//
+//			String filePath = "G:\\air.html";
+//			File f = new File(filePath);
+//			if (!f.exists()) {
+//				html = new Wrapper_gjdairu4001().getHtml(searchParam);
+//				Files.write(html, f, Charsets.UTF_8);
+//			} else {
+//				html = Files.toString(f, Charsets.UTF_8);
+//			}
 
 			html = new Wrapper_gjdairu4001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();

@@ -253,11 +253,6 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 					roundTripFlightInfos.add(round);
 				}
 			}
-			result.setData(roundTripFlightInfos);
-			result.setStatus(Constants.SUCCESS);
-			result.setRet(true);
-			return result;
-
 		} catch (Exception e) {
 			result.setRet(false);
 			result.setStatus(Constants.PARSING_FAIL);
