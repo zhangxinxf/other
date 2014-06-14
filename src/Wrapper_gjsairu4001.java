@@ -290,10 +290,17 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 				// 解析html界面
 				String[] ligInfos = StringUtils.substringsBetween(content,
 						"<td>", "</td>");
+				String flightNo="";
+				if(status==1){
+					flightNo=StringUtils.substringBetween(ligInfos[6],
+							"<input type=\"hidden\" name=\"rairline[]\" value=\"",
+							"\" />");
+				}else{
+					flightNo=StringUtils.substringBetween(ligInfos[6],
+							"<input type=\"hidden\" name=\"airline[]\" value=\"",
+							"\" />");
+				}
 				// 获取航空二字码
-				String flightNo = StringUtils.substringBetween(ligInfos[6],
-						"<input type=\"hidden\" name=\"airline[]\" value=\"",
-						"\" />");
 				flightNo = flightNo + ligInfos[0];// 航班号
 				String depTime = ligInfos[1];// 起飞时间
 				String arrTime = ligInfos[2];// 到达时间
@@ -330,5 +337,4 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 		}
 		return flightList;
 	}
-
 }
