@@ -309,8 +309,13 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 				String[] tax = ligInfos[5].split("\\$");
 				//
 				fliNo.add(flightNo);
-				// 简要
-				detail.setMonetaryunit(price[0].trim());
+				
+				// 设置货币单位
+				String monetaryunit = price[0].trim();
+				if (monetaryunit.equals("US")) {
+					monetaryunit = "USD";
+				}
+				detail.setMonetaryunit(monetaryunit);
 				detail.setPrice(new Double(price[1]));
 				detail.setDepcity(arg1.getDep());
 				detail.setArrcity(arg1.getArr());
