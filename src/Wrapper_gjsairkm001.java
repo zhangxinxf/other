@@ -247,7 +247,7 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			return result;
 		}
 		if (html.contains("There are no flights available on your selected date(s), please choose other dates to continue")) {
-			result.setRet(false);
+			result.setRet(true);
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}

@@ -209,7 +209,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 		}
 		// 需要有明显的提示语句，才能判断是否INVALID_DATE|INVALID_AIRLINE|NO_RESULT
 		if (html.contains("Sorry. There are no flights available that meet your request ")) {
-			result.setRet(false);
+			result.setRet(true);
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
