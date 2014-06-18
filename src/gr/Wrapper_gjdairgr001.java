@@ -2,6 +2,7 @@ package gr;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,21 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 	private static final String url = "http://www.aurigny.com/WebService/B2cService.asmx/AddFlight";
 	// 表单提交界面
 	private static final String postUrl = "http://www.aurigny.com/WebService/B2cService.asmx/GetAvailability";
+	private static final Map<String, String> city = new HashMap<String, String>();
+	static {
+		city.put("Alderney", "ACI");
+		city.put("Bristol", "BRS");
+		city.put("Dinard", "DNR");
+		city.put("East Midlands", "EMA");
+		city.put("Grenoble", "GNB");
+		city.put("Guernsey", "GCI");
+		city.put("Jersey", "JER");
+		city.put("London City Airport", "LCY");
+		city.put("London Gatwick", "LGW");
+		city.put("London Stansted", "STN");
+		city.put("Manchester", "MAN");
+		city.put("Southampton", "SOU");
+	}
 
 	private static QFHttpClient httpClient = null;
 
@@ -52,7 +68,7 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 		FlightSearchParam searchParam = new FlightSearchParam();
 		searchParam.setDep("JER");
 		searchParam.setArr("ACI");
-		searchParam.setDepDate("2014-06-18");
+		searchParam.setDepDate("2014-06-25");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
 		new Wrapper_gjdairgr001().run(searchParam);
@@ -61,8 +77,8 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-			//
-			// String filePath = "G:\\air.html";
+
+			// String filePath = "D:\\air.html";
 			// File f = new File(filePath);
 			// if (!f.exists()) {
 			// html = new Wrapper_gjdairgr001().getHtml(searchParam);
@@ -94,29 +110,29 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 	}
 
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
-		String[] dates = arg0.getDepDate().split("-");
+		String dates = arg0.getDepDate().replace("-", "");
 		BookingResult bookingResult = new BookingResult();
 		BookingInfo bookingInfo = new BookingInfo();
 		bookingInfo.setAction(postUrl);
 		bookingInfo.setMethod("post");
-		Map<String, String> map = new LinkedHashMap<String, String>();
-		map.put("outboundOption.originLocationCode", arg0.getDep());
-		map.put("outboundOption.destinationLocationCode", arg0.getArr());
-		map.put("outboundOption.departureDay", dates[2]);
-		map.put("outboundOption.departureMonth", dates[1]);
-		map.put("outboundOption.departureYear", dates[0]);
-		map.put("tripType", "OW");
-		map.put("guestTypes[0].type", "ADT");
-		map.put("guestTypes[1].type", "CHD");
-		map.put("guestTypes[2].type", "INF");
-		map.put("guestTypes[0].amount", "1");
-		map.put("guestTypes[1].amount", "0");
-		map.put("guestTypes[2].amount", "0");
-		map.put("flexibleSearch", "true");
-		map.put("lang", "en");
-		map.put("pos", "AIRMALTA");
-		map.put("directFlightsOnly", "false");
-		bookingInfo.setInputs(map);
+		Map<String, String> body = new LinkedHashMap<String, String>();
+		body.put("origin", arg0.getDep());
+		body.put("destination", arg0.getArr());
+		body.put("dateFrom", dates);
+		body.put("dateTo", dates);
+		body.put("iOneWay", "true");
+		body.put("iFlightOnly", "0");
+		body.put("iAdult", "1");
+		body.put("iChild", "0");
+		body.put("iInfant", "0");
+		body.put("BoardingClass", "Y");
+		body.put("CurrencyCode", "");
+		body.put("strPromoCode", "");
+		body.put("SearchType", "FARE");
+		body.put("iOther", "0");
+		body.put("otherType", "");
+		body.put("strIpAddress", "");
+		bookingInfo.setInputs(body);
 		bookingResult.setData(bookingInfo);
 		bookingResult.setRet(true);
 		return bookingResult;
@@ -281,12 +297,13 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 						String arrtime = StringUtils.substringBetween(trConent,
 								"<td class=\"BodyCOL6\">", "</td>");
 						flightSegement.setFlightno(flightNo);
-						flightSegement.setDepairport(depairport);
-						flightSegement.setArrairport(arrairport);
+						flightSegement.setDepairport(city.get(depairport));
+						flightSegement.setArrairport(city.get(arrairport));
 						flightSegement.setDepDate(arg1.getDepDate());
-						flightSegement.setArrDate(airDate);
-						flightSegement.setDeptime(deptime);
-						flightSegement.setArrtime(arrtime);
+						String[] airdates=airDate.split("/");
+						flightSegement.setArrDate(airdates[2]+"-"+airdates[1]+"-"+airdates[0]);
+						flightSegement.setDeptime(deptime.replace(" ", ""));
+						flightSegement.setArrtime(arrtime.replace(" ", ""));
 						//
 						fliNo.add(flightNo);
 						info.add(flightSegement);
@@ -302,12 +319,14 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 					String totalPriceStr = StringUtils.substringBetween(
 							priceContent, "<td class=\"BodyCOL4\">", "</td>")
 							.replace("t", "");
-					String price = priceStr.split(" ")[1].replace("\t", "");
-					String totalPrice = totalPriceStr.split(" ")[1].replace(
-							"\t", "");
-					System.out.println(totalPrice);
-					String tax = String.format("%.2f", new Double(totalPrice)
-							- new Double(price));
+					String price = priceStr.split(" ")[1];
+					String totalPrice = totalPriceStr.split(" ")[1];
+					totalPrice = totalPrice.substring(0,
+							totalPrice.indexOf(".") + 3);
+					price = price.substring(0, price.indexOf(".") + 3);
+					String tax = String.format("%.2f",
+							new Double(totalPrice.replace("&nbsp;", ""))
+									- new Double(price.replace("&nbsp;", "")));
 					detail.setMonetaryunit("GBP");
 					detail.setPrice(new Double(price));
 					detail.setDepcity(arg1.getDep());
