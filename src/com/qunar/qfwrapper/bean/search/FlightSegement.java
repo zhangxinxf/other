@@ -55,7 +55,12 @@ public class FlightSegement {
 	public FlightSegement(){
 		super();
 	}
-	
+	/*
+	 * "虚假航段信息"构造函数
+	 */
+	public FlightSegement(String fn) {
+		setFlightno(fn);
+	}
 	
 	public String forHiveLog() {
 		return StringUtils.join(Lists.newArrayList(depairport,arrairport,company,flightno,deptime,arrtime,avcanbin), "^");
@@ -140,6 +145,6 @@ public class FlightSegement {
 	@Override
 	public String toString() {
 		return "FlightSegement [depairport=" + depairport + ", arrairport=" + arrairport + ", flightno=" + flightno
-				+ ", company=" + company + ", deptime=" + deptime + ", arrtime=" + arrtime + ", depdate=" + depDate + ", arrDate=" + arrDate + "]";
+				+ ", company=" + company + ", deptime=" + deptime + ", arrtime=" + arrtime + ", depdate=" + depDate + ", arrDate=" + arrDate + ", arrDate=" + arrDate+ "]";
 	}
 }

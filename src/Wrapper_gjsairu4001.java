@@ -240,6 +240,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 					double totalprice = inprice + outprice;
 					double totalTax = outTax + inTax;
 					FlightDetail detail = in.getDetail();
+					
 					detail.setPrice(new Double(String
 							.format("%.2f", totalprice)));// 票价
 					detail.setTax(new Double(String.format("%.2f", totalTax)));// 税费

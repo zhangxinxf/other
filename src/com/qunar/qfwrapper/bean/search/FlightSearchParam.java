@@ -32,7 +32,11 @@ public class FlightSearchParam {
 	 * 往返票返程日期，格式为YYYY-MM-DD，例如2014-09-14；如果是单程搜索，则该参数值为空
 	 */
 	private String retDate;
-
+	/**
+	 * 是否支持快速通道
+	 * 如果一个wrapper已经得到FlightDetail的所有属性，而在获取航段信息时，需要多次的http请求，此种情况下，可以申请使用“快速通道”，对航段详情，不进行抓取
+	 */
+	private boolean isFastTrack;
     private String queryId;
 
     public String getWrapperid() {
@@ -97,10 +101,17 @@ public class FlightSearchParam {
 	public String getDepDate() {
 		return this.depDate;
 	}
-
+	
+	public void setIsFastTrack(boolean isFastTrack) {
+		this.isFastTrack = isFastTrack;
+	}
+	
+	public boolean getIsFastTrack() {
+		return this.isFastTrack;
+	}
 	public String toString() {
 		return "FlightSearchParam{" + "wrapperid=" + wrapperid + ", dep=" + dep + ", arr='" + arr + '\'' + ", depdate='"
-				+ depDate + '\'' +  '}';
+				+ depDate + '\'' + "isFastTrack=" + isFastTrack +'}';
 	}
 
 }

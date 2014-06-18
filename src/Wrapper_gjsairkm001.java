@@ -54,11 +54,11 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("CHQ");
+		searchParam.setDep("LHR");
 		searchParam.setArr("MLA");
-		searchParam.setDepDate("2014-07-28");
+		searchParam.setDepDate("2014-07-19");
 		searchParam.setTimeOut("600000");
-		searchParam.setRetDate("2014-09-26");
+		searchParam.setRetDate("2014-07-26");
 		searchParam.setToken("");
 		new Wrapper_gjsairkm001().run(searchParam);
 	}
@@ -67,20 +67,20 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 		String html = "";
 		try {
 
-			/*String filePath = "G:\\air.html";
-			File f = new File(filePath);
-			if (!f.exists()) {
-				html = new Wrapper_gjsairkm001().getHtml(searchParam);
-				Files.write(html, f, Charsets.UTF_8);
-			} else {
-				html = Files.toString(f, Charsets.UTF_8);
-			}*/
+			/*
+			 * String filePath = "G:\\air.html"; File f = new File(filePath); if
+			 * (!f.exists()) { html = new
+			 * Wrapper_gjsairkm001().getHtml(searchParam); Files.write(html, f,
+			 * Charsets.UTF_8); } else { html = Files.toString(f,
+			 * Charsets.UTF_8); }
+			 */
 
 			long startTime = System.currentTimeMillis();
 			html = new Wrapper_gjsairkm001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
 			result = new Wrapper_gjsairkm001().process(html, searchParam);
 			System.out.println((System.currentTimeMillis() - startTime) / 1000);
+
 			if (result.isRet() && result.getStatus().equals(Constants.SUCCESS)) {
 				List<RoundTripFlightInfo> flightList = (List<RoundTripFlightInfo>) result
 						.getData();
@@ -94,6 +94,7 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			} else {
 				System.out.println(result.getStatus());
 			}
+
 			System.out.println((System.currentTimeMillis() - startTime) / 1000);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -241,7 +242,7 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			result.setStatus(Constants.CONNECTION_FAIL);
 			return result;
 		}
-		if(html.equals(Constants.INVALID_AIRLINE)){
+		if (html.equals(Constants.INVALID_AIRLINE)) {
 			result.setRet(false);
 			result.setStatus(Constants.INVALID_AIRLINE);
 			return result;
@@ -251,7 +252,7 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
-		if(html.contains("No flights found according to your search criteria. Please try again.")){
+		if (html.contains("No flights found according to your search criteria. Please try again.")) {
 			result.setRet(false);
 			result.setStatus(Constants.INVALID_AIRLINE);
 			return result;
@@ -267,28 +268,41 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 		// 单程
 		List<BaseFlightInfo> inway = getFlightInfoByStatus(tbody_oneWay, arg1,
 				0);
+
 		// 往返
 		List<BaseFlightInfo> outway = getFlightInfoByStatus(tbody_round, arg1,
 				1);
 		List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
 		//
 		for (BaseFlightInfo out : outway) {
+
 			for (BaseFlightInfo in : inway) {
 				RoundTripFlightInfo round = new RoundTripFlightInfo();
+				FlightDetail inDetail = in.getDetail();
+				FlightDetail outDetail = out.getDetail();
+				//
+				FlightDetail detail = new FlightDetail();
+
 				// 获取机票价格
-				String prices[] = getFlightPrice(in.getDetail().getSource(),
-						out.getDetail().getSource());
-				FlightDetail detail = in.getDetail();
+				String prices[] = getFlightPrice(inDetail.getSource(),
+						outDetail.getSource());
+				// 设置明细信息
 				detail.setPrice(new Double(prices[0]));// 票价
 				detail.setTax(new Double(prices[1]));// 税费
 				detail.setMonetaryunit(prices[2]);
+				detail.setArrcity(inDetail.getArrcity());
+				detail.setDepdate(inDetail.getDepdate());
+				detail.setDepcity(inDetail.getDepcity());
+				detail.setFlightno(inDetail.getFlightno());
+				detail.setWrapperid(inDetail.getWrapperid());
 				round.setDetail(detail);
 				round.setInfo(in.getInfo());
 				// 返程信息
 				round.setRetinfo(out.getInfo());
-				round.setRetdepdate(out.getDetail().getDepdate());
-				round.setRetflightno(out.getDetail().getFlightno());
+				round.setRetdepdate(outDetail.getDepdate());
+				round.setRetflightno(outDetail.getFlightno());
 				roundTripFlightInfos.add(round);
+				detail = null;
 			}
 		}
 		result.setData(roundTripFlightInfos);
