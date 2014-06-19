@@ -28,7 +28,7 @@ import com.qunar.qfwrapper.util.QFHttpClient;
 import com.qunar.qfwrapper.util.QFPostMethod;
 
 /**
- * Aurigny航空单程抓取
+ * Aurigny航空单程
  * 
  * @author zhangx
  * 
@@ -300,8 +300,9 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 						flightSegement.setDepairport(city.get(depairport));
 						flightSegement.setArrairport(city.get(arrairport));
 						flightSegement.setDepDate(arg1.getDepDate());
-						String[] airdates=airDate.split("/");
-						flightSegement.setArrDate(airdates[2]+"-"+airdates[1]+"-"+airdates[0]);
+						String[] airdates = airDate.split("/");
+						flightSegement.setArrDate(airdates[2] + "-"
+								+ airdates[1] + "-" + airdates[0]);
 						flightSegement.setDeptime(deptime.replace(" ", ""));
 						flightSegement.setArrtime(arrtime.replace(" ", ""));
 						//
