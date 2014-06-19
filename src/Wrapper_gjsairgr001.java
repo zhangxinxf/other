@@ -1,5 +1,3 @@
-
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -7,6 +5,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
@@ -356,7 +356,14 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 						FlightSegement flightSegement = new FlightSegement();
 						String flightNo = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL1\">", "</td>");
-						flightNo=flightNo.replace(" ", "");
+						// 截取字符串
+						String reg = "\\d+";
+						Pattern pricePattern = Pattern.compile(reg);
+						Matcher priceMatcher = pricePattern.matcher(flightNo);
+						if (priceMatcher.find()) {
+							flightNo = flightNo.substring(0, 2)
+									+ priceMatcher.group();
+						}
 						String depairport = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL2\">", "</td>");
 						String arrairport = StringUtils.substringBetween(
