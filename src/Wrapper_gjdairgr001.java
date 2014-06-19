@@ -39,7 +39,7 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 
 	private static final String EXCEPTION_INFO = "excetpion";
 
-	// 获取最低票价，及税费
+	// 获取最低票价，及税费 
 	private static final String url = "http://www.aurigny.com/WebService/B2cService.asmx/AddFlight";
 	// 表单提交界面
 	private static final String postUrl = "http://www.aurigny.com/WebService/B2cService.asmx/GetAvailability";
@@ -286,6 +286,7 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 						FlightSegement flightSegement = new FlightSegement();
 						String flightNo = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL1\">", "</td>");
+						flightNo=flightNo.replace(" ", "");
 						String depairport = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL2\">", "</td>");
 						String arrairport = StringUtils.substringBetween(

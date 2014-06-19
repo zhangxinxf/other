@@ -356,6 +356,7 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 						FlightSegement flightSegement = new FlightSegement();
 						String flightNo = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL1\">", "</td>");
+						flightNo=flightNo.replace(" ", "");
 						String depairport = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL2\">", "</td>");
 						String arrairport = StringUtils.substringBetween(
