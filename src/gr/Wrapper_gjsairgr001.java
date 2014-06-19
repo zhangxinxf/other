@@ -7,11 +7,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -408,7 +405,7 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 					detail.setTax(new Double(tax));
 					detail.setFlightno(fliNo);
 					detail.setDepdate(dateFormat.parse(deptDate));
-					detail.setWrapperid("gjdairgr001");
+					detail.setWrapperid("Wrapper_gjsairgr001");
 					oneWayFlightInfo.setDetail(detail);
 					oneWayFlightInfo.setInfo(info);
 					flightList.add(oneWayFlightInfo);
