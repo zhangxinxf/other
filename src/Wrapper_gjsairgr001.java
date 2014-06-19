@@ -377,7 +377,7 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 						flightSegement.setFlightno(flightNo);
 						flightSegement.setDepairport(city.get(depairport));
 						flightSegement.setArrairport(city.get(arrairport));
-						flightSegement.setDepDate(arg1.getDepDate());
+						flightSegement.setDepDate(deptDate);
 						String[] airdates = airDate.split("/");
 						flightSegement.setArrDate(airdates[2] + "-"
 								+ airdates[1] + "-" + airdates[0]);

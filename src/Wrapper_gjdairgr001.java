@@ -67,14 +67,13 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 			"yyyy-MM-dd");
 
 	public static void main(String[] args) {
-		String ac="GR 284";
-//		FlightSearchParam searchParam = new FlightSearchParam();
-//		searchParam.setDep("JER");
-//		searchParam.setArr("ACI");
-//		searchParam.setDepDate("2014-06-25");
-//		searchParam.setTimeOut("600000");
-//		searchParam.setToken("");
-//		new Wrapper_gjdairgr001().run(searchParam);
+		FlightSearchParam searchParam = new FlightSearchParam();
+		searchParam.setDep("JER");
+		searchParam.setArr("ACI");
+		searchParam.setDepDate("2014-06-25");
+		searchParam.setTimeOut("600000");
+		searchParam.setToken("");
+		new Wrapper_gjdairgr001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
