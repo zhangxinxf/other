@@ -115,6 +115,7 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 		BookingInfo bookingInfo = new BookingInfo();
 		bookingInfo.setAction(postUrl);
 		bookingInfo.setMethod("post");
+		bookingInfo.setContentType("application/json; charset=utf-8");
 		Map<String, String> body = new LinkedHashMap<String, String>();
 		body.put("origin", arg0.getDep());
 		body.put("destination", arg0.getArr());
@@ -286,15 +287,14 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 						FlightSegement flightSegement = new FlightSegement();
 						String flightNo = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL1\">", "</td>").replaceAll("\\s","");
-						System.out.println(flightNo);
 						// 截取字符串
-//						String reg = "\\d+";
-//						Pattern pricePattern = Pattern.compile(reg);
-//						Matcher priceMatcher = pricePattern.matcher(flightNo);
-//						if (priceMatcher.find()) {
-//							flightNo = flightNo.substring(0, 2)
-//									+ priceMatcher.group();
-//						}
+						String reg = "\\d+";
+						Pattern pricePattern = Pattern.compile(reg);
+						Matcher priceMatcher = pricePattern.matcher(flightNo);
+						if (priceMatcher.find()) {
+							flightNo = flightNo.substring(0, 2)
+									+ priceMatcher.group();
+						}
 						String depairport = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL2\">", "</td>");
 						String arrairport = StringUtils.substringBetween(
