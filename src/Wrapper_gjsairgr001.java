@@ -398,14 +398,18 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 					String totalPriceStr = StringUtils.substringBetween(
 							priceContent, "<td class=\"BodyCOL4\">", "</td>")
 							.replace("t", "");
-					String price = priceStr.split(" ")[1];
-					String totalPrice = totalPriceStr.split(" ")[1];
-					totalPrice = totalPrice.substring(0,
-							totalPrice.indexOf(".") + 3);
-					price = price.substring(0, price.indexOf(".") + 3);
-					String tax = String.format("%.2f",
-							new Double(totalPrice.replace("&nbsp;", ""))
-									- new Double(price.replace("&nbsp;", "")));
+					String priceReg = "(\\d)+(\\.){1}\\d+";
+					Pattern pricePattern = Pattern.compile(priceReg);
+					Matcher priceMatcher = pricePattern.matcher(totalPriceStr);
+					String price = "0";
+					String totalPrice = "0";
+					if (priceMatcher.find())
+						totalPrice = priceMatcher.group();
+					priceMatcher = pricePattern.matcher(priceStr);
+					if (priceMatcher.find())
+						price = priceMatcher.group();
+					String tax = String.format("%.2f", new Double(totalPrice)
+							- new Double(price));
 					detail.setMonetaryunit("GBP");
 					detail.setPrice(new Double(price));
 					detail.setDepcity(arg1.getDep());

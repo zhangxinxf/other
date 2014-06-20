@@ -1,5 +1,3 @@
-
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +39,7 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 
 	private static final String EXCEPTION_INFO = "excetpion";
 
-	// 获取最低票价，及税费 
+	// 获取最低票价，及税费
 	private static final String url = "http://www.aurigny.com/WebService/B2cService.asmx/AddFlight";
 	// 表单提交界面
 	private static final String postUrl = "http://www.aurigny.com/WebService/B2cService.asmx/GetAvailability";
@@ -289,13 +287,13 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 						String flightNo = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL1\">", "</td>");
 						// 截取字符串
-						String reg = "\\d+";
-						Pattern pricePattern = Pattern.compile(reg);
-						Matcher priceMatcher = pricePattern.matcher(flightNo);
-						if (priceMatcher.find()) {
-							flightNo = flightNo.substring(0, 2)
-									+ priceMatcher.group();
-						}
+//						String reg = "\\d+";
+//						Pattern pricePattern = Pattern.compile(reg);
+//						Matcher priceMatcher = pricePattern.matcher(flightNo);
+//						if (priceMatcher.find()) {
+//							flightNo = flightNo.substring(0, 2)
+//									+ priceMatcher.group();
+//						}
 						String depairport = StringUtils.substringBetween(
 								trConent, "<td class=\"BodyCOL2\">", "</td>");
 						String arrairport = StringUtils.substringBetween(
@@ -313,8 +311,10 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 						String[] airdates = airDate.split("/");
 						flightSegement.setArrDate(airdates[2] + "-"
 								+ airdates[1] + "-" + airdates[0]);
-						flightSegement.setDeptime(deptime.replace(" ", ""));
-						flightSegement.setArrtime(arrtime.replace(" ", ""));
+						flightSegement
+								.setDeptime(deptime.replaceAll("\\s", ""));
+						flightSegement
+								.setArrtime(arrtime.replaceAll("\\s", ""));
 						//
 						fliNo.add(flightNo);
 						info.add(flightSegement);
@@ -330,14 +330,19 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 					String totalPriceStr = StringUtils.substringBetween(
 							priceContent, "<td class=\"BodyCOL4\">", "</td>")
 							.replace("t", "");
-					String price = priceStr.split(" ")[1];
-					String totalPrice = totalPriceStr.split(" ")[1];
-					totalPrice = totalPrice.substring(0,
-							totalPrice.indexOf(".") + 3);
-					price = price.substring(0, price.indexOf(".") + 3);
-					String tax = String.format("%.2f",
-							new Double(totalPrice.replace("&nbsp;", ""))
-									- new Double(price.replace("&nbsp;", "")));
+					String priceReg = "(\\d)+(\\.){1}\\d+";
+					Pattern pricePattern = Pattern.compile(priceReg);
+					Matcher priceMatcher = pricePattern.matcher(totalPriceStr);
+
+					String price = "0";
+					String totalPrice = "0";
+					if (priceMatcher.find())
+						totalPrice = priceMatcher.group();
+					priceMatcher = pricePattern.matcher(priceStr);
+					if (priceMatcher.find())
+						price = priceMatcher.group();
+					String tax = String.format("%.2f", new Double(totalPrice)
+							- new Double(price));
 					detail.setMonetaryunit("GBP");
 					detail.setPrice(new Double(price));
 					detail.setDepcity(arg1.getDep());
