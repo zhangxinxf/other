@@ -257,56 +257,62 @@ public class Wrapper_gjsairkm001 implements QunarCrawler {
 			result.setStatus(Constants.INVALID_AIRLINE);
 			return result;
 		}
-		// 获取tbody内容
-		String[] tbodys = StringUtils.substringsBetween(html, "<tbody>",
-				"</tbody>");
-		String tbody_oneWay = tbodys[0].replace("\n", "").replace("\t", "")
-				.replace("</tr></table>", "</java>");
-		String tbody_round = tbodys[1].replace("\n", "").replace("\t", "")
-				.replace("</tr></table>", "</java>");
-		// 单独获取航班信息，然后进行组合
-		// 单程
-		List<BaseFlightInfo> inway = getFlightInfoByStatus(tbody_oneWay, arg1,
-				0);
+		try {
+			// 获取tbody内容
+			String[] tbodys = StringUtils.substringsBetween(html, "<tbody>",
+					"</tbody>");
+			String tbody_oneWay = tbodys[0].replace("\n", "").replace("\t", "")
+					.replace("</tr></table>", "</java>");
+			String tbody_round = tbodys[1].replace("\n", "").replace("\t", "")
+					.replace("</tr></table>", "</java>");
+			// 单独获取航班信息，然后进行组合
+			// 单程
+			List<BaseFlightInfo> inway = getFlightInfoByStatus(tbody_oneWay,
+					arg1, 0);
 
-		// 往返
-		List<BaseFlightInfo> outway = getFlightInfoByStatus(tbody_round, arg1,
-				1);
-		List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
-		//
-		for (BaseFlightInfo out : outway) {
-
-			for (BaseFlightInfo in : inway) {
-				RoundTripFlightInfo round = new RoundTripFlightInfo();
-				FlightDetail inDetail = in.getDetail();
+			// 往返
+			List<BaseFlightInfo> outway = getFlightInfoByStatus(tbody_round,
+					arg1, 1);
+			List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
+			//
+			for (BaseFlightInfo out : outway) {
 				FlightDetail outDetail = out.getDetail();
-				FlightDetail detail = new FlightDetail();
-				// 获取机票价格
-				String prices[] = getFlightPrice(inDetail.getSource(),
-						outDetail.getSource());
-				// 设置明细信息
-				detail.setPrice(new Double(prices[0]));// 票价
-				detail.setTax(new Double(prices[1]));// 税费
-				detail.setMonetaryunit(prices[2]);
-				detail.setArrcity(inDetail.getArrcity());
-				detail.setDepdate(inDetail.getDepdate());
-				detail.setDepcity(inDetail.getDepcity());
-				detail.setFlightno(inDetail.getFlightno());
-				detail.setWrapperid(inDetail.getWrapperid());
-				round.setDetail(detail);
-				round.setInfo(in.getInfo());
-				// 返程信息
-				round.setRetinfo(out.getInfo());
-				round.setRetdepdate(outDetail.getDepdate());
-				round.setRetflightno(outDetail.getFlightno());
-				roundTripFlightInfos.add(round);
-				detail = null;
+				for (BaseFlightInfo in : inway) {
+					RoundTripFlightInfo round = new RoundTripFlightInfo();
+					FlightDetail inDetail = in.getDetail();
+					FlightDetail detail = new FlightDetail();
+					// 获取机票价格
+					String prices[] = getFlightPrice(inDetail.getSource(),
+							outDetail.getSource());
+					// 设置明细信息
+					detail.setPrice(new Double(prices[0]));// 票价
+					detail.setTax(new Double(prices[1]));// 税费
+					detail.setMonetaryunit(prices[2]);
+					detail.setArrcity(inDetail.getArrcity());
+					detail.setDepdate(inDetail.getDepdate());
+					detail.setDepcity(inDetail.getDepcity());
+					detail.setFlightno(inDetail.getFlightno());
+					detail.setWrapperid(inDetail.getWrapperid());
+					round.setDetail(detail);
+					round.setInfo(in.getInfo());
+					// 返程信息
+					round.setRetinfo(out.getInfo());
+					round.setRetdepdate(outDetail.getDepdate());
+					round.setRetflightno(outDetail.getFlightno());
+					roundTripFlightInfos.add(round);
+					detail = null;
+				}
 			}
+			result.setData(roundTripFlightInfos);
+			result.setStatus(Constants.SUCCESS);
+			result.setRet(true);
+			return result;
+		} catch (Exception e) {
+			result.setStatus(Constants.PARSING_FAIL);
+			result.setRet(false);
+			e.printStackTrace();
+			return result;
 		}
-		result.setData(roundTripFlightInfos);
-		result.setStatus(Constants.SUCCESS);
-		result.setRet(true);
-		return result;
 	}
 
 	/**

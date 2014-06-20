@@ -43,6 +43,8 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 	private static final String url = "http://www.aurigny.com/WebService/B2cService.asmx/AddFlight";
 	// 表单提交界面
 	private static final String postUrl = "http://www.aurigny.com/WebService/B2cService.asmx/GetAvailability";
+	// 主页面
+	private static final String root = "http://www.aurigny.com";
 	private static final Map<String, String> city = new HashMap<String, String>();
 	static {
 		city.put("Alderney", "ACI");
@@ -113,7 +115,7 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 		String dates = arg0.getDepDate().replace("-", "");
 		BookingResult bookingResult = new BookingResult();
 		BookingInfo bookingInfo = new BookingInfo();
-		bookingInfo.setAction(postUrl);
+		bookingInfo.setAction(root);
 		bookingInfo.setMethod("post");
 		bookingInfo.setContentType("application/json; charset=utf-8");
 		Map<String, String> body = new LinkedHashMap<String, String>();
@@ -226,15 +228,17 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
-		// 获取tbody内容
-		String tbody = html.replace("\\u003c", "<").replace("\\u003e", ">")
-				.replace("\\", "").replace("//", "");
-		String table = StringUtils
-				.substringBetween(tbody, "<table", "</table>");
-		// 获取所有tr
-		String[] trs = StringUtils.substringsBetween(table, "<tr>", "</tr>");
 		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
 		try {
+			// 获取tbody内容
+			String tbody = html.replace("\\u003c", "<").replace("\\u003e", ">")
+					.replace("\\", "").replace("//", "");
+			String table = StringUtils.substringBetween(tbody, "<table",
+					"</table>");
+			// 获取所有tr
+			String[] trs = StringUtils
+					.substringsBetween(table, "<tr>", "</tr>");
+
 			// 获取航班列表信息
 			for (int i = 1; i < trs.length; i++) {
 				String content = trs[i];
@@ -286,7 +290,8 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 						String trConent = fliTd[j];
 						FlightSegement flightSegement = new FlightSegement();
 						String flightNo = StringUtils.substringBetween(
-								trConent, "<td class=\"BodyCOL1\">", "</td>").replaceAll("\\s","");
+								trConent, "<td class=\"BodyCOL1\">", "</td>")
+								.replaceAll("\\s", "");
 						// 截取字符串
 						String reg = "\\d+";
 						Pattern pricePattern = Pattern.compile(reg);

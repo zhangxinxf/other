@@ -1,4 +1,3 @@
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.BaseFlightInfo;
@@ -47,6 +44,8 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 	private static final String url = "http://www.aurigny.com/WebService/B2cService.asmx/AddFlight";
 	// 表单提交界面
 	private static final String postUrl = "http://www.aurigny.com/WebService/B2cService.asmx/GetAvailability";
+	// 首页
+	private static final String root = "http://www.aurigny.com";
 	private static final Map<String, String> city = new HashMap<String, String>();
 	static {
 		city.put("Alderney", "ACI");
@@ -70,7 +69,7 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("ACI");
+		searchParam.setDep("JER");
 		searchParam.setArr("BRS");
 		searchParam.setDepDate("2014-06-26");
 		searchParam.setTimeOut("600000");
@@ -82,16 +81,16 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-			String filePath = "G:\\air.html";
-			File f = new File(filePath);
-			if (!f.exists()) {
-				html = new Wrapper_gjsairgr001().getHtml(searchParam);
-				html = html.replace("\\u003c", "<").replace("\\u003e", ">")
-						.replace("\\", "").replace("//", "");
-				Files.write(html, f, Charsets.UTF_8);
-			} else {
-				html = Files.toString(f, Charsets.UTF_8);
-			}
+			// String filePath = "G:\\air.html";
+			// File f = new File(filePath);
+			// if (!f.exists()) {
+			// html = new Wrapper_gjsairgr001().getHtml(searchParam);
+			// html = html.replace("\\u003c", "<").replace("\\u003e", ">")
+			// .replace("\\", "").replace("//", "");
+			// Files.write(html, f, Charsets.UTF_8);
+			// } else {
+			// html = Files.toString(f, Charsets.UTF_8);
+			// }
 
 			long startTime = System.currentTimeMillis();
 			html = new Wrapper_gjsairgr001().getHtml(searchParam);
@@ -122,10 +121,11 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 		String retdates = arg0.getRetDate().replace("-", "");
 		BookingResult bookingResult = new BookingResult();
 		BookingInfo bookingInfo = new BookingInfo();
-		bookingInfo.setAction(postUrl);
+		bookingInfo.setAction(root);
 		bookingInfo.setMethod("post");
 		bookingInfo.setContentType("application/json; charset=utf-8");
 		Map<String, String> body = new LinkedHashMap<String, String>();
+
 		body.put("origin", arg0.getDep());
 		body.put("destination", arg0.getArr());
 		body.put("dateFrom", dates);
@@ -230,56 +230,72 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
-		// 获取tbody内容
-		String tbody = html.replace("\\u003c", "<").replace("\\u003e", ">")
-				.replace("\\", "").replace("//", "");
-		String[] tables = StringUtils.substringsBetween(tbody, "<table",
-				"</table>");
-		// 单程
-		ProcessResultInfo inway = getFlightInfoByStatus(tables[0], arg1, 0);
-		// 往返
-		ProcessResultInfo outway = getFlightInfoByStatus(tables[1], arg1, 1);
-		if (!inway.isRet()) {
-			return inway;
-		}
-		if (!outway.isRet()) {
-			return outway;
-		}
-		if ((inway.isRet() && inway.getStatus().equals(Constants.NO_RESULT))
-				|| (outway.isRet() && outway.getStatus().equals(
-						Constants.NO_RESULT))) {
-			inway.setRet(true);
-			inway.setStatus(Constants.NO_RESULT);
-			return inway;
-		}
-		// 进行组合
-		List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
-		for (BaseFlightInfo out : outway.getData()) {
-			double outPrice = out.getDetail().getPrice();
-			double outTax = out.getDetail().getTax();
-			for (BaseFlightInfo in : inway.getData()) {
-				RoundTripFlightInfo round = new RoundTripFlightInfo();
-				// 获取机票价格
-				double inPrice = in.getDetail().getPrice();
-				double inTax = in.getDetail().getTax();
-				FlightDetail detail = in.getDetail();
-				String price = String.format("%.2f", inPrice + outPrice);
-				String tax = String.format("%.2f", inTax + outTax);
-				detail.setPrice(new Double(price));// 票价
-				detail.setTax(new Double(tax));// 税费
-				round.setDetail(detail);
-				round.setInfo(in.getInfo());
-				// 返程信息
-				round.setRetinfo(out.getInfo());
-				round.setRetdepdate(out.getDetail().getDepdate());
-				round.setRetflightno(out.getDetail().getFlightno());
-				roundTripFlightInfos.add(round);
+		try {
+			// 获取tbody内容
+			String tbody = html.replace("\\u003c", "<").replace("\\u003e", ">")
+					.replace("\\", "").replace("//", "");
+			String[] tables = StringUtils.substringsBetween(tbody, "<table",
+					"</table>");
+			// 单程
+			ProcessResultInfo inway = getFlightInfoByStatus(tables[0], arg1, 0);
+			// 往返
+			ProcessResultInfo outway = getFlightInfoByStatus(tables[1], arg1, 1);
+			if (!inway.isRet()) {
+				return inway;
 			}
+			if (!outway.isRet()) {
+				return outway;
+			}
+			if ((inway.isRet() && inway.getStatus().equals(Constants.NO_RESULT))
+					|| (outway.isRet() && outway.getStatus().equals(
+							Constants.NO_RESULT))) {
+				inway.setRet(true);
+				inway.setStatus(Constants.NO_RESULT);
+				return inway;
+			}
+			// 进行组合
+			List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
+			for (BaseFlightInfo out : outway.getData()) {
+				FlightDetail outDetail = out.getDetail();
+				double outPrice = outDetail.getPrice();
+				double outTax = outDetail.getTax();
+				for (BaseFlightInfo in : inway.getData()) {
+					RoundTripFlightInfo round = new RoundTripFlightInfo();
+					FlightDetail detail = in.getDetail();
+					FlightDetail newDetail = new FlightDetail();
+					// 获取机票价格
+					double inPrice = detail.getPrice();
+					double inTax = detail.getTax();
+					String price = String.format("%.2f", inPrice + outPrice);
+					String tax = String.format("%.2f", inTax + outTax);
+					// 设置明细信息
+					newDetail.setPrice(new Double(price));// 票价
+					newDetail.setTax(new Double(tax));// 税费
+					newDetail.setMonetaryunit(detail.getMonetaryunit());
+					newDetail.setArrcity(detail.getArrcity());
+					newDetail.setDepdate(detail.getDepdate());
+					newDetail.setDepcity(detail.getDepcity());
+					newDetail.setFlightno(detail.getFlightno());
+					newDetail.setWrapperid(detail.getWrapperid());
+					round.setDetail(newDetail);
+					round.setInfo(in.getInfo());
+					// 返程信息
+					round.setRetinfo(out.getInfo());
+					round.setRetdepdate(outDetail.getDepdate());
+					round.setRetflightno(outDetail.getFlightno());
+					roundTripFlightInfos.add(round);
+				}
+			}
+			result.setData(roundTripFlightInfos);
+			result.setStatus(Constants.SUCCESS);
+			result.setRet(true);
+			return result;
+		} catch (Exception e) {
+			result.setStatus(Constants.PARSING_FAIL);
+			result.setRet(false);
+			e.printStackTrace();
+			return result;
 		}
-		result.setData(roundTripFlightInfos);
-		result.setStatus(Constants.SUCCESS);
-		result.setRet(true);
-		return result;
 	}
 
 	/**
@@ -356,7 +372,8 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 						String trConent = fliTd[j];
 						FlightSegement flightSegement = new FlightSegement();
 						String flightNo = StringUtils.substringBetween(
-								trConent, "<td class=\"BodyCOL1\">", "</td>").replaceAll("\\s","");
+								trConent, "<td class=\"BodyCOL1\">", "</td>")
+								.replaceAll("\\s", "");
 						// 截取字符串
 						String reg = "\\d+";
 						Pattern pricePattern = Pattern.compile(reg);

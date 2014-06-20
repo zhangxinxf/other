@@ -229,27 +229,36 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 			List<BaseFlightInfo> outway = getFlightInfoByStatus(ontrs, arg1, 1);
 			//
 			for (BaseFlightInfo out : outway) {
-				double outprice = out.getDetail().getPrice();
-				double outTax = out.getDetail().getTax();
+				FlightDetail outDetail = out.getDetail();
+				double outprice = outDetail.getPrice();
+				double outTax = outDetail.getTax();
 				for (BaseFlightInfo in : inway) {
 					RoundTripFlightInfo round = new RoundTripFlightInfo();
+					FlightDetail detail = in.getDetail();
+					FlightDetail newDetail = new FlightDetail();
 					// 获取机票价格
-					double inprice = in.getDetail().getPrice();
-					double inTax = in.getDetail().getTax();
-
+					double inprice = detail.getPrice();
+					double inTax = detail.getTax();
 					double totalprice = inprice + outprice;
 					double totalTax = outTax + inTax;
-					FlightDetail detail = in.getDetail();
-					
-					detail.setPrice(new Double(String
-							.format("%.2f", totalprice)));// 票价
-					detail.setTax(new Double(String.format("%.2f", totalTax)));// 税费
-					round.setDetail(detail);
+
+					// 设置明细信息
+					newDetail.setPrice(new Double(String.format("%.2f",
+							totalprice)));// 票价
+					newDetail
+							.setTax(new Double(String.format("%.2f", totalTax)));// 税费
+					newDetail.setMonetaryunit(detail.getMonetaryunit());
+					newDetail.setArrcity(detail.getArrcity());
+					newDetail.setDepdate(detail.getDepdate());
+					newDetail.setDepcity(detail.getDepcity());
+					newDetail.setFlightno(detail.getFlightno());
+					newDetail.setWrapperid(detail.getWrapperid());
+					round.setDetail(newDetail);
 					round.setInfo(in.getInfo());
 					// 返程信息
 					round.setRetinfo(out.getInfo());
-					round.setRetdepdate(out.getDetail().getDepdate());
-					round.setRetflightno(out.getDetail().getFlightno());
+					round.setRetdepdate(outDetail.getDepdate());
+					round.setRetflightno(outDetail.getFlightno());
 					roundTripFlightInfos.add(round);
 				}
 			}
@@ -257,6 +266,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 			result.setRet(false);
 			result.setStatus(Constants.PARSING_FAIL);
 			e.printStackTrace();
+			return result;
 		}
 		result.setRet(true);
 		result.setStatus(Constants.SUCCESS);
@@ -291,15 +301,19 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 				// 解析html界面
 				String[] ligInfos = StringUtils.substringsBetween(content,
 						"<td>", "</td>");
-				String flightNo="";
-				if(status==1){
-					flightNo=StringUtils.substringBetween(ligInfos[6],
-							"<input type=\"hidden\" name=\"rairline[]\" value=\"",
-							"\" />");
-				}else{
-					flightNo=StringUtils.substringBetween(ligInfos[6],
-							"<input type=\"hidden\" name=\"airline[]\" value=\"",
-							"\" />");
+				String flightNo = "";
+				if (status == 1) {
+					flightNo = StringUtils
+							.substringBetween(
+									ligInfos[6],
+									"<input type=\"hidden\" name=\"rairline[]\" value=\"",
+									"\" />");
+				} else {
+					flightNo = StringUtils
+							.substringBetween(
+									ligInfos[6],
+									"<input type=\"hidden\" name=\"airline[]\" value=\"",
+									"\" />");
 				}
 				// 获取航空二字码
 				flightNo = flightNo + ligInfos[0];// 航班号
@@ -310,7 +324,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 				String[] tax = ligInfos[5].split("\\$");
 				//
 				fliNo.add(flightNo);
-				
+
 				// 设置货币单位
 				String monetaryunit = price[0].trim();
 				if (monetaryunit.equals("US")) {

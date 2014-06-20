@@ -260,6 +260,7 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 			result.setRet(false);
 			result.setStatus(Constants.PARSING_FAIL);
 			e.printStackTrace();
+			return result;
 		}
 		result.setRet(true);
 		result.setStatus(Constants.SUCCESS);

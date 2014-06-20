@@ -241,25 +241,26 @@ public class Wrapper_gjdairkm001 implements QunarCrawler {
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
-		// 获取tbody内容
-		String tbody = StringUtils
-				.substringBetween(html, "<tbody>", "</tbody>");
-		tbody = tbody.replace("\n", "").replace("\t", "")
-				.replace("</tr></table>", "</java>");
-		// 获取所有tr
-		String reg = "(<tr(.+?)>(.+?))</td></tr>";
-		Pattern pt = Pattern.compile(reg);
-		Matcher titles = pt.matcher(tbody);
-		// 匹配div
-		String divReg = "<div(.+?)>(.+?)</div>";
-		// 匹配a标签
-		pt = Pattern.compile(divReg);
-		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
-		// 航班信息
-		List<FlightSegement> info = new ArrayList<FlightSegement>();
-		// 票价信息
-		FlightDetail detail = new FlightDetail();
 		try {
+			// 获取tbody内容
+			String tbody = StringUtils
+					.substringBetween(html, "<tbody>", "</tbody>");
+			tbody = tbody.replace("\n", "").replace("\t", "")
+					.replace("</tr></table>", "</java>");
+			// 获取所有tr
+			String reg = "(<tr(.+?)>(.+?))</td></tr>";
+			Pattern pt = Pattern.compile(reg);
+			Matcher titles = pt.matcher(tbody);
+			// 匹配div
+			String divReg = "<div(.+?)>(.+?)</div>";
+			// 匹配a标签
+			pt = Pattern.compile(divReg);
+			List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
+			// 航班信息
+			List<FlightSegement> info = new ArrayList<FlightSegement>();
+			// 票价信息
+			FlightDetail detail = new FlightDetail();
+			
 			// 获取航班列表信息
 			while (titles.find()) {
 				OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
