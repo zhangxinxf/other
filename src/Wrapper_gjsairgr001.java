@@ -122,7 +122,7 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 		BookingResult bookingResult = new BookingResult();
 		BookingInfo bookingInfo = new BookingInfo();
 		bookingInfo.setAction(root);
-		bookingInfo.setMethod("post");
+		bookingInfo.setMethod("get");
 		bookingInfo.setContentType("application/json; charset=utf-8");
 		Map<String, String> body = new LinkedHashMap<String, String>();
 
