@@ -285,7 +285,8 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 						String trConent = fliTd[j];
 						FlightSegement flightSegement = new FlightSegement();
 						String flightNo = StringUtils.substringBetween(
-								trConent, "<td class=\"BodyCOL1\">", "</td>");
+								trConent, "<td class=\"BodyCOL1\">", "</td>").replaceAll("\\s","");
+						System.out.println(flightNo);
 						// 截取字符串
 //						String reg = "\\d+";
 //						Pattern pricePattern = Pattern.compile(reg);
