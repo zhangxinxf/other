@@ -85,7 +85,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-			String filePath = "G:\\air.html";
+			String filePath = "D:\\air.html";
 			File f = new File(filePath);
 			if (!f.exists()) {
 				html = new Wrapper_gjdweb00031().getHtml(searchParam);
@@ -253,21 +253,19 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			} else {
 				return EXCEPTION_INFO;
 			}
-			String cookies = StringUtils.join(httpClient.getState()
-					.getCookies(), "; ");
 			get = new QFGetMethod(url);
-			get.setRequestHeader("Cookie", cookies);
 			int getStatus = httpClient.executeMethod(get);
 			if (getStatus != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;
 			}
 			// http://flight.asiatravel.com/crs.flight/www/Search.aspx?usid=9708495d-cfaa-4067-91c7-882a8d69432d&lan=en-US&scode=
-			url = url.replace("Search.Wait.aspx", "Search.aspx");
-			url += "&scode=";
-			get = new QFGetMethod(url);
-			String finalcookies = StringUtils.join(httpClient.getState()
-					.getCookies(), "; ");
-			get.setRequestHeader("Cookie", finalcookies);
+			String processUrl=url.replace("Search.Wait.aspx", "Search.Wait.Process.aspx");
+			get = new QFGetMethod(processUrl);
+			int waitsucc = httpClient.executeMethod(get);
+			Files.write(get.getResponseBodyAsString(), new File("D://wait.html"), Charsets.UTF_8);
+			String waitUrl = url.replace("Search.Wait.aspx", "Search.aspx");
+			get = new QFGetMethod(waitUrl);
+			
 			int succ = httpClient.executeMethod(get);
 			if (succ != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;
