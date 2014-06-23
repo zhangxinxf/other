@@ -30,7 +30,7 @@ import com.qunar.qfwrapper.util.QFHttpClient;
 import com.qunar.qfwrapper.util.QFPostMethod;
 
 /**
- * Aurigny航空往返
+ * Asiatravel航空往返
  * 
  * @author zhangx
  * 
