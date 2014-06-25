@@ -75,6 +75,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			"yyyy-MM-dd");
 
 	public static void main(String[] args) {
+
 		FlightSearchParam searchParam = new FlightSearchParam();
 		searchParam.setDep("HGR");
 		searchParam.setArr("BJS");
@@ -88,7 +89,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-			String filePath = "G:\\k.html";
+			String filePath = "D:\\k.html";
 			File f = new File(filePath);
 			if (!f.exists()) {
 				html = new Wrapper_gjdweb00031().getHtml(searchParam);
@@ -295,10 +296,8 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	 */
 	public ProcessResultInfo process(String arg0, FlightSearchParam arg1) {
 		// 判断票是否已卖完
-		boolean flag = false;
 		String html = arg0;
 		String deptDate = arg1.getDepDate();
-		QFPostMethod post = null;
 		ProcessResultInfo result = new ProcessResultInfo();
 		if (EXCEPTION_INFO.equals(html)) {
 			result.setRet(false);
@@ -317,161 +316,102 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 		// return result;
 		// }
 		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
+		String priceReg = "(\\d)+,?\\d+(\\.){1}\\d+";
+		Pattern pricePattern = Pattern.compile(priceReg);
 		try {
-			// 获取tbody内容
+			// 截取字符串
 			StringBuffer str = new StringBuffer("<table class=\"box1\"");
 			String table = StringUtils.substringAfter(html, str.toString());
 			str.append(table);
 			table = StringUtils.substringBefore(str.toString(),
 					"TicketingConditions");
-			Files.write(table=table.replace("<tr></tr>", "<java>"), new File("G:\\replace.html"), Charsets.UTF_8);
-			
-			String htmls[] = table.split("<tr></tr>");
-			int n = 0;
-			for (String string : htmls) {
-				Files.write(string, new File("G:\\replace" + n + ".html"),
-						Charsets.UTF_8);
-				n++;
-			}
 
-			// 获取所有tr
-			String[] trs = StringUtils
-					.substringsBetween(table, "<tr>", "</tr>");
-
-			// 获取航班列表信息
-			for (int i = 1; i < trs.length; i++) {
-				String content = trs[i];
-				// 当前没有票
-				String[] tds = StringUtils.substringsBetween(content,
-						"<td class=\"BodyCOL6\">", "</td>");
-				if (tds[0].contains("arrow.png") && tds[1].contains("Sold Out")) {
-					continue;
-				}
-				String value = "";
-				if (!tds[0].contains("arrow.png")) {
-					value = StringUtils.substringBetween(tds[0], "value=\"",
-							"\"");
-				} else {
-					value = StringUtils.substringBetween(tds[1], "value=\"",
-							"\"");
-				}
-				try {
-					post = new QFPostMethod(url);
-					post.setRequestHeader("Content-Type",
-							"application/json; charset=utf-8");
-					// 设置post提交表单数据
-					JSONObject body = new JSONObject();
-					body.put("strOutward", value);
-					body.put("strReturn", "");
-					body.put("strIpAddress", "");
-					post.setRequestBody(body.toJSONString());
-					int postStatus = httpClient.executeMethod(post);
-					if (postStatus != HttpStatus.SC_OK) {
-						continue;
-					}
-					flag = true;
-					String resultDetail = post.getResponseBodyAsString()
-							.replace("\\u003c", "<").replace("\\u003e", ">")
-							.replace("\\", "").replace("//", "");
-					String[] detailTable = StringUtils.substringsBetween(
-							resultDetail, "<table", "</table>");
-					// 获取航线信息
-					String[] fliTd = StringUtils.substringsBetween(
-							detailTable[0], "<tr>", "</tr>");
-					// 航线信息
-					List<FlightSegement> info = new ArrayList<FlightSegement>();
-					// 航班号
-					List<String> fliNo = new ArrayList<String>();
-					// 单条航班完整信息
-					OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
-					FlightDetail detail = new FlightDetail();
-					for (int j = 1; j < fliTd.length; j++) {
-						String trConent = fliTd[j];
-						FlightSegement flightSegement = new FlightSegement();
-						String flightNo = StringUtils.substringBetween(
-								trConent, "<td class=\"BodyCOL1\">", "</td>")
-								.replaceAll("\\s", "");
-						// 截取字符串
-						String reg = "\\d+";
-						Pattern pricePattern = Pattern.compile(reg);
-						Matcher priceMatcher = pricePattern.matcher(flightNo);
-						if (priceMatcher.find()) {
-							flightNo = flightNo.substring(0, 2)
-									+ priceMatcher.group();
-						}
-						String depairport = StringUtils.substringBetween(
-								trConent, "<td class=\"BodyCOL2\">", "</td>");
-						String arrairport = StringUtils.substringBetween(
-								trConent, "<td class=\"BodyCOL3\">", "</td>");
-						String airDate = StringUtils.substringBetween(trConent,
-								"<td class=\"BodyCOL4\">", "</td>");
-						String deptime = StringUtils.substringBetween(trConent,
-								"<td class=\"BodyCOL5\">", "</td>");
-						String arrtime = StringUtils.substringBetween(trConent,
-								"<td class=\"BodyCOL6\">", "</td>");
-						flightSegement.setFlightno(flightNo);
-						flightSegement.setDepairport(city.get(depairport));
-						flightSegement.setArrairport(city.get(arrairport));
-						flightSegement.setDepDate(arg1.getDepDate());
-						String[] airdates = airDate.split("/");
-						flightSegement.setArrDate(airdates[2] + "-"
-								+ airdates[1] + "-" + airdates[0]);
-						flightSegement
-								.setDeptime(deptime.replaceAll("\\s", ""));
-						flightSegement
-								.setArrtime(arrtime.replaceAll("\\s", ""));
-						//
-						fliNo.add(flightNo);
-						info.add(flightSegement);
-					}
-					// 获取价格
-					String[] priceTr = StringUtils.substringsBetween(
-							detailTable[1], "<tr>", "</tr>");
-					String priceContent = priceTr[1];
-					// 获取票价和总价
-					String priceStr = StringUtils.substringBetween(
-							priceContent, "<td class=\"BodyCOL3\">", "</td>")
-							.replace("t", "");
-					String totalPriceStr = StringUtils.substringBetween(
-							priceContent, "<td class=\"BodyCOL4\">", "</td>")
-							.replace("t", "");
-					String priceReg = "(\\d)+(\\.){1}\\d+";
-					Pattern pricePattern = Pattern.compile(priceReg);
-					Matcher priceMatcher = pricePattern.matcher(totalPriceStr);
-
-					String price = "0";
-					String totalPrice = "0";
-					if (priceMatcher.find())
-						totalPrice = priceMatcher.group();
-					priceMatcher = pricePattern.matcher(priceStr);
-					if (priceMatcher.find())
-						price = priceMatcher.group();
-					String tax = String.format("%.2f", new Double(totalPrice)
-							- new Double(price));
-					detail.setMonetaryunit("GBP");
-					detail.setPrice(new Double(price));
-					detail.setDepcity(arg1.getDep());
-					detail.setArrcity(arg1.getArr());
-					detail.setTax(new Double(tax));
-					detail.setFlightno(fliNo);
-					detail.setDepdate(dateFormat.parse(deptDate));
-					detail.setWrapperid("gjdairgr001");
-					oneWayFlightInfo.setDetail(detail);
-					oneWayFlightInfo.setInfo(info);
-					flightList.add(oneWayFlightInfo);
-				} catch (Exception e) {
-					e.printStackTrace();
-					result.setStatus(Constants.PARSING_FAIL);
-					result.setRet(false);
-					return result;
-				} finally {
-					post.releaseConnection();
-				}
-			}
-			if (!flag) {
+			// 第一个table和最后一个table是分页信息
+			String tables[] = table.split("</tr><tr>");
+			if (tables.length <= 2) {
 				result.setRet(true);
 				result.setStatus(Constants.NO_RESULT);
 				return result;
+			}
+			// 航线信息
+			List<FlightSegement> info = new ArrayList<FlightSegement>();
+			// 航班号
+			List<String> fliNo = new ArrayList<String>();
+			// 单条航班完整信息
+			OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
+			FlightDetail detail = new FlightDetail();
+			// 获取航班列表信息
+			for (int i = 1; i < tables.length - 1; i++) {
+				String trConent = tables[i];
+				// 获取当前水
+				String priceTable = StringUtils
+						.substringBetween(
+								trConent,
+								"<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">",
+								"</table>");
+
+				String price = "";
+				String tax = "";
+				String monetaryunit = StringUtils.substringBetween(priceTable,
+						"<td class=\"price\">", "<span");
+				Matcher priceMatcher = pricePattern.matcher(priceTable);
+				int num = 0;
+				while (priceMatcher.find()) {
+					if (num == 0)
+						price = priceMatcher.group();
+					if (num == 1) {
+						tax = priceMatcher.group();
+						break;
+					}
+					num++;
+				}
+				// 获取航班信息
+				String[] fliInfo = StringUtils.substringsBetween(priceTable,
+						"<tr class=\"back_lighter_2\">", "</tr>");
+				for (int n = 0; n < fliInfo.length - 1; n++) {
+					FlightSegement flightSegement = new FlightSegement();
+					String flightNo = StringUtils.substringBetween(trConent,
+							"<td class=\"BodyCOL1\">", "</td>").replaceAll("\\s",
+							"");
+					flightSegement.setFlightno(flightNo);
+					flightSegement.setDepairport("");
+					flightSegement.setArrairport("");
+					flightSegement.setDepDate(arg1.getDepDate());
+					String[] airdates = airDate.split("/");
+					flightSegement.setArrDate(airdates[2] + "-" + airdates[1] + "-"
+							+ airdates[0]);
+					flightSegement.setDeptime(deptime.replaceAll("\\s", ""));
+					flightSegement.setArrtime(arrtime.replaceAll("\\s", ""));
+					//
+					fliNo.add(flightNo);
+					info.add(flightSegement);
+				}
+			
+			
+
+				String depairport = StringUtils.substringBetween(trConent,
+						"<td class=\"BodyCOL2\">", "</td>");
+				String arrairport = StringUtils.substringBetween(trConent,
+						"<td class=\"BodyCOL3\">", "</td>");
+				String airDate = StringUtils.substringBetween(trConent,
+						"<td class=\"BodyCOL4\">", "</td>");
+				String deptime = StringUtils.substringBetween(trConent,
+						"<td class=\"BodyCOL5\">", "</td>");
+				String arrtime = StringUtils.substringBetween(trConent,
+						"<td class=\"BodyCOL6\">", "</td>");
+			
+
+				detail.setMonetaryunit(monetaryunit);
+				detail.setPrice(new Double(price.replaceAll(",", "")));
+				detail.setDepcity(arg1.getDep());
+				detail.setArrcity(arg1.getArr());
+				detail.setTax(new Double(tax.replaceAll(",", "")));
+				detail.setFlightno(fliNo);
+				detail.setDepdate(dateFormat.parse(deptDate));
+				detail.setWrapperid("gjdairgr001");
+				oneWayFlightInfo.setDetail(detail);
+				oneWayFlightInfo.setInfo(info);
+				flightList.add(oneWayFlightInfo);
 			}
 			result.setStatus(Constants.SUCCESS);
 			result.setData(flightList);
