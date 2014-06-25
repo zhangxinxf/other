@@ -16,6 +16,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import sun.font.EAttribute;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -47,9 +49,9 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	// 获取最低票价，及税费
 	private static final String url = "http://www.aurigny.com/WebService/B2cService.asmx/AddFlight";
 	// 表单提交界面
-	private static final String postUrl = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?lan=en-US";
+	private static final String postUrl = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
 	// 主页面
-	private static final String root = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?lan=en-US";
+	private static final String root = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
 	private static final Map<String, String> city = new HashMap<String, String>();
 
 	static {
@@ -74,10 +76,11 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("BJS");
-		searchParam.setArr("HKG");
+		searchParam.setDep("HGR");
+		searchParam.setArr("BJS");
 		searchParam.setDepDate("2014-07-12");
 		searchParam.setTimeOut("600000");
+		searchParam.setWrapperid("gjdweb00031");
 		searchParam.setToken("");
 		new Wrapper_gjdweb00031().run(searchParam);
 	}
@@ -85,7 +88,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-			String filePath = "G:\\air.html";
+			String filePath = "G:\\k.html";
 			File f = new File(filePath);
 			if (!f.exists()) {
 				html = new Wrapper_gjdweb00031().getHtml(searchParam);
@@ -94,7 +97,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 				html = Files.toString(f, Charsets.UTF_8);
 			}
 
-			html = new Wrapper_gjdweb00031().getHtml(searchParam);
+			// html = new Wrapper_gjdweb00031().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
 			result = new Wrapper_gjdweb00031().process(html, searchParam);
 			if (result.isRet() && result.getStatus().equals(Constants.SUCCESS)) {
@@ -160,12 +163,11 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 				return EXCEPTION_INFO;
 			}
 			String response = get.getResponseBodyAsString();
-			// 释放连接
-			get.releaseConnection();
 			String viewState = StringUtils.substringBetween(response,
 					"id=\"__VIEWSTATE\" value=\"", "\"");
-			Files.write(viewState, new File("G:\\view.txt"), Charsets.UTF_8);
+			// 提交表单
 			post = new QFPostMethod(postUrl);
+			post.setRequestHeader("Referer", root);
 			// 时间处理
 			String[] serachArrDate = arg0.getDepDate().split("-");
 			// 设置post提交表单数据
@@ -184,25 +186,10 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 							"QuickSearch_View$CitySelect_DepartCity$TextBox_CityCode",
 							arg0.getDep()),
 					new NameValuePair(
-							"QuickSearch_View$CitySelect_DepartCity$DDL_CountryList",
-							"107"),
-					new NameValuePair(
-							"QuickSearch_View$CitySelect_DepartCity$DDL_CityList",
-							"BJS"),
-					new NameValuePair(
 							"QuickSearch_View$CitySelect_ReturnCity$TextBox_CityCode",
 							arg0.getArr()),
-					new NameValuePair(
-							"QuickSearch_View$CitySelect_ReturnCity$DDL_CountryList",
-							"108"),
-					new NameValuePair(
-							"QuickSearch_View$CitySelect_ReturnCity$DDL_CityList",
-							"HKG"),
 					new NameValuePair("QuickSearch_View$RouteType",
 							"Radio_oneway"),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_DepartSml$hidden_SelectedDate",
-							"24/June/2014"),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
 							serachArrDate[2]),
@@ -215,9 +202,6 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
 							"ANY"),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_Returnsml$hidden_SelectedDate",
-							"26/June/2014"),
 					new NameValuePair(
 							"QuickSearch_View$Dropdownlist_SeatClass",
 							"Economy"),
@@ -236,10 +220,11 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 							"False") };
 			// post.setRequestEntity(new
 			// ByteArrayRequestEntity(raw.getBytes(),"application/x-www-form-urlencoded"));
-			post.setRequestHeader("Content-Type",
-					"application/x-www-form-urlencoded");
 			post.setRequestBody(parametersBody);
 			post.setFollowRedirects(false);
+			String cookie = StringUtils.join(
+					httpClient.getState().getCookies(), ";");
+			post.setRequestHeader("Cookie", cookie);
 			int postStatus = httpClient.executeMethod(post);
 			String url = "";
 			if (postStatus == HttpStatus.SC_MOVED_TEMPORARILY
@@ -260,22 +245,29 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 				return EXCEPTION_INFO;
 			}
 			get = new QFGetMethod(url);
+			cookie = StringUtils.join(httpClient.getState().getCookies(), ";");
+			get.setRequestHeader("Cookie", cookie);
+			get.setRequestHeader("Referer", postUrl);
 			int getStatus = httpClient.executeMethod(get);
 			if (getStatus != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;
 			}
-			// 释放连接
-			get.releaseConnection();
 			String processUrl = url.replace("Search.Wait.aspx",
 					"Search.Wait.Process.aspx");
 			get = new QFGetMethod(processUrl);
-			int waitsucc = httpClient.executeMethod(get);
-			Files.write(get.getResponseBodyAsString(),
-					new File("G://wait.html"), Charsets.UTF_8);
-			// 释放连接
-			get.releaseConnection();
+			cookie = StringUtils.join(httpClient.getState().getCookies(), ";");
+			get.setRequestHeader("Cookie", cookie);
+			get.setRequestHeader("Referer", url);
+			int proces = httpClient.executeMethod(get);
+			if (proces != HttpStatus.SC_OK) {
+				return EXCEPTION_INFO;
+			}
+
 			String waitUrl = url.replace("Search.Wait.aspx", "Search.aspx");
 			get = new QFGetMethod(waitUrl);
+			cookie = StringUtils.join(httpClient.getState().getCookies(), ";");
+			get.setRequestHeader("Referer", url);
+			get.setRequestHeader("Cookie", cookie);
 			int succ = httpClient.executeMethod(get);
 			if (succ != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;
@@ -319,18 +311,29 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			return result;
 		}
 		// 需要有明显的提示语句，才能判断是否INVALID_DATE|INVALID_AIRLINE|NO_RESULT
-		if (html.contains("No flight found.")) {
-			result.setRet(true);
-			result.setStatus(Constants.NO_RESULT);
-			return result;
-		}
+		// if (html.contains("No flight found.")) {
+		// result.setRet(true);
+		// result.setStatus(Constants.NO_RESULT);
+		// return result;
+		// }
 		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
 		try {
 			// 获取tbody内容
-			String tbody = html.replace("\\u003c", "<").replace("\\u003e", ">")
-					.replace("\\", "").replace("//", "");
-			String table = StringUtils.substringBetween(tbody, "<table",
-					"</table>");
+			StringBuffer str = new StringBuffer("<table class=\"box1\"");
+			String table = StringUtils.substringAfter(html, str.toString());
+			str.append(table);
+			table = StringUtils.substringBefore(str.toString(),
+					"TicketingConditions");
+			Files.write(table=table.replace("<tr></tr>", "<java>"), new File("G:\\replace.html"), Charsets.UTF_8);
+			
+			String htmls[] = table.split("<tr></tr>");
+			int n = 0;
+			for (String string : htmls) {
+				Files.write(string, new File("G:\\replace" + n + ".html"),
+						Charsets.UTF_8);
+				n++;
+			}
+
 			// 获取所有tr
 			String[] trs = StringUtils
 					.substringsBetween(table, "<tr>", "</tr>");

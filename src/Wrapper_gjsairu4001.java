@@ -1,3 +1,4 @@
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -12,6 +13,8 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.BaseFlightInfo;
@@ -40,7 +43,7 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 	private static final String EXCEPTION_INFO = "excetpion";
 
 	// 表单提交界面
-	private static final String postUrl = "http://buddhaair.com/booking";
+	private static final String postUrl = "http://www.buddhaair.com/booking";
 	private static QFHttpClient httpClient = null;
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
@@ -50,10 +53,10 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("KTM");
-		searchParam.setArr("JKR");
-		searchParam.setDepDate("2014-07-19");
-		searchParam.setRetDate("2014-07-23");
+		searchParam.setDep("BIR");
+		searchParam.setArr("TMI");
+		searchParam.setDepDate("2014-09-26");
+		searchParam.setRetDate("2014-10-21");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
 		new Wrapper_gjsairu4001().run(searchParam);
@@ -63,14 +66,14 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 		String html = "";
 		try {
 
-			// String filePath = "G:\\air.html";
-			// File f = new File(filePath);
-			// if (!f.exists()) {
-			// html = new Wrapper_gjsairu4001().getHtml(searchParam);
-			// Files.write(html, f, Charsets.UTF_8);
-			// } else {
-			// html = Files.toString(f, Charsets.UTF_8);
-			// }
+			String filePath = "G:\\air.html";
+			File f = new File(filePath);
+			if (!f.exists()) {
+				html = new Wrapper_gjsairu4001().getHtml(searchParam);
+				Files.write(html, f, Charsets.UTF_8);
+			} else {
+				html = Files.toString(f, Charsets.UTF_8);
+			}
 
 			html = new Wrapper_gjsairu4001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
@@ -218,6 +221,11 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 			// 获取tbody内容
 			String[] tbody = StringUtils.substringsBetween(html, "<tbody>",
 					"</tbody>");
+			if (tbody.length != 2) {
+				result.setRet(true);
+				result.setStatus(Constants.NO_RESULT);
+				return result;
+			}
 			// 获取所有tr
 			String[] intrs = StringUtils.substringsBetween(tbody[0], "<tr>",
 					"</tr>");

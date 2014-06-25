@@ -38,7 +38,7 @@ public class Wrapper_gjdairu4001 implements QunarCrawler {
 	private static final String EXCEPTION_INFO = "excetpion";
 
 	// 表单提交界面
-	private static final String postUrl = "http://buddhaair.com/booking";
+	private static final String postUrl = "http://www.buddhaair.com/booking";
 	private static QFHttpClient httpClient = null;
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
