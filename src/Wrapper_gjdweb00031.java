@@ -48,7 +48,6 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	// 主页面
 	private static final String root = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
 
-	private static String pageViewUrl = "";
 
 	private static QFHttpClient httpClient = null;
 
@@ -70,7 +69,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-			String filePath = "G:\\k.html";
+			String filePath = "D:\\k.html";
 			File f = new File(filePath);
 			// if (!f.exists()) {
 			// html = getHtml(searchParam);
@@ -86,6 +85,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			if (result.isRet() && result.getStatus().equals(Constants.SUCCESS)) {
 				List<OneWayFlightInfo> flightList = (List<OneWayFlightInfo>) result
 						.getData();
+				System.out.println("总量"+flightList.size());
 				for (OneWayFlightInfo in : flightList) {
 					System.out
 							.println("************" + in.getInfo().toString());
@@ -254,7 +254,6 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			if (succ != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;
 			}
-			pageViewUrl = serachUrl;
 			return get.getResponseBodyAsString();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -295,8 +294,6 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
-		httpClient.getParams().setCookiePolicy(
-				CookiePolicy.BROWSER_COMPATIBILITY);
 		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
 		String priceReg = "(\\d)+,?\\d+(\\.){1}\\d+";
 		Pattern pricePattern = Pattern.compile(priceReg);
@@ -304,8 +301,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			// 截取字符串
 			StringBuffer str = new StringBuffer("<table class=\"box1\"");
 			String table = StringUtils.substringAfter(html, str.toString());
-			str.append(table);
-			table = StringUtils.substringBefore(str.toString(),
+			table = StringUtils.substringBefore(table.toString(),
 					"TicketingConditions");
 			// 第一个table和最后一个table是分页信息
 			String tables[] = table.split("</tr><tr>");
@@ -316,17 +312,20 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			}
 			// 获取航班列表信息
 			findListbyPageNum(flightList, arg0, pricePattern, tables);
+			System.out.println(flightList.size());
 			//
 			String[] pageHtml = StringUtils.substringsBetween(tables[0], "(",
 					")");
 			String[] serachArrDate = arg0.getDepDate().split("-");
 			String key = StringUtils.substringBetween(html,
-					"id=\"__VIEWSTATE_KEY\" value=\"", "\"");
+					"id=\"__VIEWSTATE_KEY\" value=\"", "\"").replace("&amp;",
+					"&");
 			String perviouspage = StringUtils.substringBetween(html,
 					"id=\"__PREVIOUSPAGE\" value=\"", "\"");
-			String action = StringUtils.substringBetween(html, "action=\"",
-					"\"").replace("&amp;", "&");
-			for (int k = 0; k < pageHtml.length; k++) {
+			String action = "http://flight.asiatravel.com/"
+					+ StringUtils.substringAfter(key, "/");
+			int len = pageHtml.length > 10 ? 10 : pageHtml.length;
+			for (int k = 0; k < len; k++) {
 				String pageValue = pageHtml[k];
 				String id = StringUtils.substringBefore(
 						pageValue.replace("'", ""), ",");
@@ -349,12 +348,6 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 								arg0.getArr()),
 						new NameValuePair("QuickSearch_View$RouteType",
 								"Radio_oneway"),
-						new NameValuePair(
-								"QuickSearch_View$DateSelection_DepartSml$hidden_SelectedDate",
-								"12/July/2014"),
-						new NameValuePair(
-								"QuickSearch_View$DateSelection_Returnsml$hidden_SelectedDate",
-								"1/July/2014"),
 						new NameValuePair(
 								"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
 								serachArrDate[2]),
@@ -382,76 +375,50 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 								"QuickSearch_View$Dropdownlist_Adult", "1"),
 						new NameValuePair(
 								"QuickSearch_View$Dropdownlist_child", "0"),
-						new NameValuePair(
-								"DisplaySearchResultCurrency1$Dropdownlist_Currency",
-								"SGD"),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$UserControlDisplayQuickSearchPackageRoomSelection2$Dropdownlist_Adult",
-								"1"),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$UserControlDisplayQuickSearchPackageRoomSelection3$Dropdownlist_Adult",
-								"1"),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$UserControlDisplayQuickSearchPackageRoomSelection4$Dropdownlist_Adult",
-								"1"),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$UserControlDisplayQuickSearchPackageRoomSelection5$Dropdownlist_Adult",
-								"1"),
+						// new NameValuePair(
+						// "DisplaySearchResultCurrency1$Dropdownlist_Currency",
+						// "SGD"),
 						new NameValuePair(
 								"UserControl_DisplayQuickSearchHotel$Dropdownlist_Room",
 								"0"),
 						new NameValuePair("ErrorCode", "0"),
 						new NameValuePair("QuickSearch_View$TextBox_AdvSearch",
-								"False"),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$TextBox_DepartCountryCity",
-								""),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$TextBox_ReturnCountryCity",
-								""),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$TextBox_DepartDate",
-								""),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$TextBox_ReturnDate",
-								""),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$TextBox_SetID",
-								""),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$TextBox_RefID",
-								""),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$TextBox_CarrierCode",
-								""),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$TextBox_RouteType",
-								""),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$Dropdownlist_Room",
-								"") };
+								"False") };
 				String cookie = StringUtils.join(httpClient.getState()
 						.getCookies(), ";");
-				QFPostMethod post = new QFPostMethod(
-						"http://flight.asiatravel.com/crs.flight/www/" + action
-								+ "&scode=");
+				QFPostMethod post = new QFPostMethod(action);
 				post.setRequestHeader("Content-Type",
 						"application/x-www-form-urlencoded");
 				post.setRequestHeader("Cookie", cookie);
-				System.out.println(cookie);
-				post.setRequestHeader("Referer",
-						"http://flight.asiatravel.com/crs.flight/www/" + action
-								+ "&scode=");
+				post.setRequestHeader("Referer", action);
 				post.setRequestBody(parametersBody);
-				// client。gethostconfigration。setproxyhost
-
-				HostConfiguration configuration = httpClient
-						.getHostConfiguration();
-				configuration.setProxy("127.0.0.1", 8888);
-				httpClient.setHostConfiguration(configuration);
+				// HostConfiguration configuration = httpClient
+				// .getHostConfiguration();
+				// configuration.setProxy("127.0.0.1", 8888);
+				// httpClient.setHostConfiguration(configuration);
 				int status = httpClient.executeMethod(post);
-				Files.write(post.getResponseBodyAsString(), new File("G://page"
-						+ k + ".html"), Charsets.UTF_8);
+				if (status != HttpStatus.SC_OK) {
+					result.setStatus(Constants.PARSING_FAIL);
+					result.setRet(false);
+					return result;
+				}
+				// 分页数据
+				// 截取字符串
+				String pageNumHtml = post.getResponseBodyAsString();
+				String pagetable = StringUtils.substringAfter(pageNumHtml,
+						str.toString());
+				pagetable = StringUtils.substringBefore(pagetable.toString(),
+						"TicketingConditions");
+				// 第一个table和最后一个table是分页信息
+				String pageTables[] = pagetable.split("</tr><tr>");
+				if (pageTables.length <= 1) {
+					result.setRet(true);
+					result.setStatus(Constants.NO_RESULT);
+					return result;
+				}
+				// 获取航班列表信息
+				findListbyPageNum(flightList, arg0, pricePattern, pageTables);
+				System.out.println(flightList.size());
 			}
 			result.setStatus(Constants.SUCCESS);
 			result.setData(flightList);
@@ -484,7 +451,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 				FlightDetail detail = new FlightDetail();
 
 				String trConent = tables[i];
-				Files.write(trConent, new File("G:\\" + i + ".html"),
+				Files.write(trConent, new File("D:\\" + i + ".html"),
 						Charsets.UTF_8);
 				trConent = trConent.replace("\n", "").replace("\r", "")
 						.replace("\t", "");
