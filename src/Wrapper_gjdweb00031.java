@@ -38,8 +38,6 @@ import com.qunar.qfwrapper.util.QFPostMethod;
  * 
  */
 public class Wrapper_gjdweb00031 implements QunarCrawler {
-	private static Logger logger = LoggerFactory
-			.getLogger(Wrapper_gjdweb00031.class);
 
 	private static final String EXCEPTION_INFO = "excetpion";
 
@@ -60,7 +58,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	public static void main(String[] args) {
 		//
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("HKT");
+		searchParam.setDep("BKK");
 		searchParam.setArr("BJS");
 		searchParam.setDepDate("2014-07-12");
 		searchParam.setTimeOut("600000");
@@ -300,7 +298,6 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			return get.getResponseBodyAsString();
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.error("获取网站信息异常", e);
 			return EXCEPTION_INFO;
 		} finally {
 			if (null != get) {

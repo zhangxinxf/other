@@ -39,8 +39,7 @@ import com.qunar.qfwrapper.util.QFPostMethod;
  * 
  */
 public class Wrapper_gjsweb00031 implements QunarCrawler {
-	private static Logger logger = LoggerFactory
-			.getLogger(Wrapper_gjdweb00031.class);
+	
 
 	private static final String EXCEPTION_INFO = "excetpion";
 
@@ -328,7 +327,6 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 			return get.getResponseBodyAsString();
 		} catch (Exception e) {
 			e.printStackTrace();
-			logger.error("获取网站信息异常", e);
 			return EXCEPTION_INFO;
 		} finally {
 			if (null != get) {
