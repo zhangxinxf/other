@@ -1,6 +1,7 @@
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +47,15 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	private static final String postUrl = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
 	// 主页面
 	private static final String root = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
-
-	private static QFHttpClient httpClient = null;
-
+	private static Map<String, String> data = new HashMap<String, String>();
+	{
+		data.put("BJS", "PEK");
+		data.put("SIA", "XIY");
+	}
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd");
+
+	private static QFHttpClient httpClient = null;
 
 	public static void main(String[] args) {
 		//
@@ -349,10 +354,14 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 				result.setStatus(Constants.NO_RESULT);
 				return result;
 			}
+			String depKey = arg0.getDep();
+			String arrKey = arg0.getArr();
+			String dep = StringUtils.isBlank(data.get(depKey)) ? depKey
+					: data.get(depKey);
+			String arr = StringUtils.isBlank(data.get(arrKey)) ? arrKey
+					: data.get(arrKey);
 			// 获取航班列表信息
-			findListbyPageNum(flightList, arg0, pricePattern, tables);
-			System.out.println(flightList.size());
-			//
+			findListbyPageNum(flightList, arg0, pricePattern, tables,dep,arr);
 			String[] pageHtml = StringUtils.substringsBetween(tables[0], "(",
 					")");
 			String[] serachArrDate = arg0.getDepDate().split("-");
@@ -451,7 +460,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 					}
 					// 获取航班列表信息
 					findListbyPageNum(flightList, arg0, pricePattern,
-							pageTables);
+							pageTables,dep,arr);
 				} catch (Exception e) {
 					result.setRet(false);
 					result.setStatus(Constants.CONNECTION_FAIL);
@@ -478,7 +487,7 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	 */
 	public List<OneWayFlightInfo> findListbyPageNum(
 			List<OneWayFlightInfo> flightList, FlightSearchParam arg1,
-			Pattern pricePattern, String tables[]) throws Exception {
+			Pattern pricePattern, String tables[],String dep,String arr) throws Exception {
 		try {
 			String deptDate = arg1.getDepDate();
 			for (int i = 1; i < tables.length; i++) {
@@ -564,8 +573,8 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 				}
 				detail.setMonetaryunit(monetaryunit);
 				detail.setPrice(new Double(price.replaceAll(",", "")));
-				detail.setDepcity(arg1.getDep());
-				detail.setArrcity(arg1.getArr());
+				detail.setDepcity(dep);
+				detail.setArrcity(arr);
 				detail.setTax(new Double(tax.replaceAll(",", "")));
 				detail.setFlightno(fliNo);
 				detail.setDepdate(dateFormat.parse(deptDate));
