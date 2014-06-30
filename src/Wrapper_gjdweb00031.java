@@ -13,8 +13,6 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -58,8 +56,8 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	public static void main(String[] args) {
 		//
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("BKK");
-		searchParam.setArr("BJS");
+		searchParam.setDep("USM");
+		searchParam.setArr("KCH");
 		searchParam.setDepDate("2014-07-12");
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdweb00031");
@@ -353,117 +351,120 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			}
 			String depKey = arg0.getDep();
 			String arrKey = arg0.getArr();
-			String dep = StringUtils.isBlank(data.get(depKey)) ? depKey
-					: data.get(depKey);
-			String arr = StringUtils.isBlank(data.get(arrKey)) ? arrKey
-					: data.get(arrKey);
+			String dep = StringUtils.isBlank(data.get(depKey)) ? depKey : data
+					.get(depKey);
+			String arr = StringUtils.isBlank(data.get(arrKey)) ? arrKey : data
+					.get(arrKey);
 			// 获取航班列表信息
-			findListbyPageNum(flightList, arg0, pricePattern, tables,dep,arr);
+			findListbyPageNum(flightList, arg0, pricePattern, tables, dep, arr);
 			String[] pageHtml = StringUtils.substringsBetween(tables[0], "(",
 					")");
-			String[] serachArrDate = arg0.getDepDate().split("-");
-			String key = StringUtils.substringBetween(html,
-					"id=\"__VIEWSTATE_KEY\" value=\"", "\"").replace("&amp;",
-					"&");
-			String perviouspage = StringUtils.substringBetween(html,
-					"id=\"__PREVIOUSPAGE\" value=\"", "\"");
-			String action = "http://flight.asiatravel.com/"
-					+ StringUtils.substringAfter(key, "/");
-			int len = pageHtml.length > 10 ? 10 : pageHtml.length;
-			for (int k = 0; k < len; k++) {
-				String pageValue = pageHtml[k];
-				String id = StringUtils.substringBefore(
-						pageValue.replace("'", ""), ",");
-				// 设置post提交表单数据
-				NameValuePair[] parametersBody = new NameValuePair[] {
-						new NameValuePair("__EVENTTARGET", id),
-						new NameValuePair("__EVENTARGUMENT", ""),
-						new NameValuePair("__LASTFOCUS", ""),
-						new NameValuePair("__VIEWSTATE_KEY", key),
-						new NameValuePair("__VIEWSTATE", ""),
-						new NameValuePair("__PREVIOUSPAGE", perviouspage),
-						new NameValuePair(
-								"Displaytopsubmenuflight1$DisplayLanguageSelector1$Dropdownlist_Languages",
-								"en-US"),
-						new NameValuePair(
-								"QuickSearch_View$CitySelect_DepartCity$TextBox_CityCode",
-								arg0.getDep()),
-						new NameValuePair(
-								"QuickSearch_View$CitySelect_ReturnCity$TextBox_CityCode",
-								arg0.getArr()),
-						new NameValuePair("QuickSearch_View$RouteType",
-								"Radio_oneway"),
-						new NameValuePair(
-								"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
-								serachArrDate[2]),
-						new NameValuePair(
-								"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Month",
-								Integer.parseInt(serachArrDate[1]) + ""),
-						new NameValuePair(
-								"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Year",
-								serachArrDate[0]),
-						new NameValuePair(
-								"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
-								"ANY"),
-						new NameValuePair(
-								"QuickSearch_View$Dropdownlist_SeatClass",
-								"Economy"),
-						new NameValuePair(
-								"QuickSearch_View$Radiobuttonlist_SearchType",
-								"0"),
-						new NameValuePair(
-								"QuickSearch_View$CarrierSelect_Carrier$TextBox_CarrierCode",
-								""),
-						new NameValuePair("QuickSearch_View$RadioButton_Sort",
-								"0"),
-						new NameValuePair(
-								"QuickSearch_View$Dropdownlist_Adult", "1"),
-						new NameValuePair(
-								"QuickSearch_View$Dropdownlist_child", "0"),
-						new NameValuePair(
-								"UserControl_DisplayQuickSearchHotel$Dropdownlist_Room",
-								"0"),
-						new NameValuePair("ErrorCode", "0"),
-						new NameValuePair("QuickSearch_View$TextBox_AdvSearch",
-								"False") };
-				String cookie = StringUtils.join(httpClient.getState()
-						.getCookies(), ";");
+			if (null != pageHtml && pageHtml.length > 0) {
+				String[] serachArrDate = arg0.getDepDate().split("-");
+				String key = StringUtils.substringBetween(html,
+						"id=\"__VIEWSTATE_KEY\" value=\"", "\"").replace(
+						"&amp;", "&");
+				String perviouspage = StringUtils.substringBetween(html,
+						"id=\"__PREVIOUSPAGE\" value=\"", "\"");
+				String action = "http://flight.asiatravel.com/"
+						+ StringUtils.substringAfter(key, "/");
+				int len = pageHtml.length > 10 ? 10 : pageHtml.length;
+				for (int k = 0; k < len; k++) {
+					String pageValue = pageHtml[k];
+					String id = StringUtils.substringBefore(
+							pageValue.replace("'", ""), ",");
+					// 设置post提交表单数据
+					NameValuePair[] parametersBody = new NameValuePair[] {
+							new NameValuePair("__EVENTTARGET", id),
+							new NameValuePair("__EVENTARGUMENT", ""),
+							new NameValuePair("__LASTFOCUS", ""),
+							new NameValuePair("__VIEWSTATE_KEY", key),
+							new NameValuePair("__VIEWSTATE", ""),
+							new NameValuePair("__PREVIOUSPAGE", perviouspage),
+							new NameValuePair(
+									"Displaytopsubmenuflight1$DisplayLanguageSelector1$Dropdownlist_Languages",
+									"en-US"),
+							new NameValuePair(
+									"QuickSearch_View$CitySelect_DepartCity$TextBox_CityCode",
+									arg0.getDep()),
+							new NameValuePair(
+									"QuickSearch_View$CitySelect_ReturnCity$TextBox_CityCode",
+									arg0.getArr()),
+							new NameValuePair("QuickSearch_View$RouteType",
+									"Radio_oneway"),
+							new NameValuePair(
+									"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
+									serachArrDate[2]),
+							new NameValuePair(
+									"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Month",
+									Integer.parseInt(serachArrDate[1]) + ""),
+							new NameValuePair(
+									"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Year",
+									serachArrDate[0]),
+							new NameValuePair(
+									"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
+									"ANY"),
+							new NameValuePair(
+									"QuickSearch_View$Dropdownlist_SeatClass",
+									"Economy"),
+							new NameValuePair(
+									"QuickSearch_View$Radiobuttonlist_SearchType",
+									"0"),
+							new NameValuePair(
+									"QuickSearch_View$CarrierSelect_Carrier$TextBox_CarrierCode",
+									""),
+							new NameValuePair(
+									"QuickSearch_View$RadioButton_Sort", "0"),
+							new NameValuePair(
+									"QuickSearch_View$Dropdownlist_Adult", "1"),
+							new NameValuePair(
+									"QuickSearch_View$Dropdownlist_child", "0"),
+							new NameValuePair(
+									"UserControl_DisplayQuickSearchHotel$Dropdownlist_Room",
+									"0"),
+							new NameValuePair("ErrorCode", "0"),
+							new NameValuePair(
+									"QuickSearch_View$TextBox_AdvSearch",
+									"False") };
+					String cookie = StringUtils.join(httpClient.getState()
+							.getCookies(), ";");
 
-				try {
-					post = new QFPostMethod(action);
-					post.setRequestHeader("Content-Type",
-							"application/x-www-form-urlencoded");
-					post.setRequestHeader("Cookie", cookie);
-					post.setRequestHeader("Referer", action);
-					post.setRequestBody(parametersBody);
-					int status = httpClient.executeMethod(post);
-					if (status != HttpStatus.SC_OK) {
-						result.setStatus(Constants.PARSING_FAIL);
+					try {
+						post = new QFPostMethod(action);
+						post.setRequestHeader("Content-Type",
+								"application/x-www-form-urlencoded");
+						post.setRequestHeader("Cookie", cookie);
+						post.setRequestHeader("Referer", action);
+						post.setRequestBody(parametersBody);
+						int status = httpClient.executeMethod(post);
+						if (status != HttpStatus.SC_OK) {
+							result.setStatus(Constants.PARSING_FAIL);
+							result.setRet(false);
+							return result;
+						}
+						// 分页数据
+						String pageNumHtml = post.getResponseBodyAsString();
+						String pagetable = StringUtils.substringAfter(
+								pageNumHtml, str.toString());
+						pagetable = StringUtils.substringBefore(
+								pagetable.toString(), "TicketingConditions");
+						// 第一个table和最后一个table是分页信息
+						String pageTables[] = pagetable.split("</tr><tr>");
+						if (pageTables.length <= 1) {
+							result.setRet(true);
+							result.setStatus(Constants.NO_RESULT);
+							return result;
+						}
+						// 获取航班列表信息
+						findListbyPageNum(flightList, arg0, pricePattern,
+								pageTables, dep, arr);
+					} catch (Exception e) {
 						result.setRet(false);
+						result.setStatus(Constants.CONNECTION_FAIL);
 						return result;
+					} finally {
+						post.releaseConnection();
 					}
-					// 分页数据
-					String pageNumHtml = post.getResponseBodyAsString();
-					String pagetable = StringUtils.substringAfter(pageNumHtml,
-							str.toString());
-					pagetable = StringUtils.substringBefore(
-							pagetable.toString(), "TicketingConditions");
-					// 第一个table和最后一个table是分页信息
-					String pageTables[] = pagetable.split("</tr><tr>");
-					if (pageTables.length <= 1) {
-						result.setRet(true);
-						result.setStatus(Constants.NO_RESULT);
-						return result;
-					}
-					// 获取航班列表信息
-					findListbyPageNum(flightList, arg0, pricePattern,
-							pageTables,dep,arr);
-				} catch (Exception e) {
-					result.setRet(false);
-					result.setStatus(Constants.CONNECTION_FAIL);
-					return result;
-				} finally {
-					post.releaseConnection();
 				}
 			}
 			result.setStatus(Constants.SUCCESS);
@@ -484,7 +485,8 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 	 */
 	public List<OneWayFlightInfo> findListbyPageNum(
 			List<OneWayFlightInfo> flightList, FlightSearchParam arg1,
-			Pattern pricePattern, String tables[],String dep,String arr) throws Exception {
+			Pattern pricePattern, String tables[], String dep, String arr)
+			throws Exception {
 		try {
 			String deptDate = arg1.getDepDate();
 			for (int i = 1; i < tables.length; i++) {

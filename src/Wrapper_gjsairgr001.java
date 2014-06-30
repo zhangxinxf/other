@@ -214,7 +214,7 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			result.setStatus(Constants.CONNECTION_FAIL);
 			return result;
 		}
-		if (html.contains("Invalid Date")) {
+		if (html.contains("Invalid Date")||html.contains("{003}")) {
 			result.setRet(false);
 			result.setStatus(Constants.INVALID_DATE);
 			return result;
