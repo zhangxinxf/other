@@ -111,7 +111,7 @@ public class Wrapper_gjsairmu004 implements QunarCrawler {
 		body.put("depDate", arg0.getDepDate());
 		body.put("depRtDate", arg0.getRetDate());
 		body.put("cond.cabinRank", "ECONOMY");
-		body.put("submit", "");
+		//body.put("submit", "");
 		bookingInfo.setInputs(body);
 		bookingResult.setData(bookingInfo);
 		bookingResult.setRet(true);
