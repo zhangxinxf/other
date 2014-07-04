@@ -70,10 +70,10 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
 		searchParam.setDep("JER");
-		searchParam.setArr("BRS");
-		searchParam.setDepDate("2014-06-26");
+		searchParam.setArr("ACI");
+		searchParam.setDepDate("2014-07-12");
 		searchParam.setTimeOut("600000");
-		searchParam.setRetDate("2014-07-12");
+		searchParam.setRetDate("2014-07-16");
 		searchParam.setToken("");
 		new Wrapper_gjsairgr001().run(searchParam);
 	}
@@ -81,7 +81,7 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 	public void run(FlightSearchParam searchParam) {
 		String html = "";
 		try {
-			// String filePath = "G:\\air.html";
+			 String filePath = "G:\\air.html";
 			// File f = new File(filePath);
 			// if (!f.exists()) {
 			// html = new Wrapper_gjsairgr001().getHtml(searchParam);
@@ -96,10 +96,10 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			html = new Wrapper_gjsairgr001().getHtml(searchParam);
 			ProcessResultInfo result = new ProcessResultInfo();
 			result = new Wrapper_gjsairgr001().process(html, searchParam);
-			System.out.println((System.currentTimeMillis() - startTime) / 1000);
 			if (result.isRet() && result.getStatus().equals(Constants.SUCCESS)) {
 				List<RoundTripFlightInfo> flightList = (List<RoundTripFlightInfo>) result
 						.getData();
+				System.out.println("数量:"+flightList.size());
 				for (RoundTripFlightInfo in : flightList) {
 					System.out.println("returnInfo"
 							+ in.getRetinfo().toString());
@@ -110,7 +110,6 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			} else {
 				System.out.println(result.getStatus());
 			}
-			System.out.println((System.currentTimeMillis() - startTime) / 1000);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -125,7 +124,6 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 		bookingInfo.setMethod("get");
 		bookingInfo.setContentType("application/json; charset=utf-8");
 		Map<String, String> body = new LinkedHashMap<String, String>();
-
 		body.put("origin", arg0.getDep());
 		body.put("destination", arg0.getArr());
 		body.put("dateFrom", dates);
@@ -159,7 +157,6 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			// 转换日期格式
 			String dates = arg0.getDepDate().replace("-", "");
-			String retdates = arg0.getRetDate().replace("-", "");
 			post = new QFPostMethod(postUrl);
 			post.setRequestHeader("Content-Type",
 					"application/json; charset=utf-8");
@@ -168,8 +165,8 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			body.put("origin", arg0.getDep());
 			body.put("destination", arg0.getArr());
 			body.put("dateFrom", dates);
-			body.put("dateTo", retdates);
-			body.put("iOneWay", false);
+			body.put("dateTo", dates);
+			body.put("iOneWay", true);
 			body.put("iFlightOnly", "0");
 			body.put("iAdult", 1);
 			body.put("iChild", 0);
@@ -214,7 +211,7 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			result.setStatus(Constants.CONNECTION_FAIL);
 			return result;
 		}
-		if (html.contains("Invalid Date")||html.contains("{003}")) {
+		if (html.contains("Invalid Date") || html.contains("{003}")) {
 			result.setRet(false);
 			result.setStatus(Constants.INVALID_DATE);
 			return result;
@@ -230,16 +227,53 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
+		QFPostMethod post = null;
 		try {
 			// 获取tbody内容
-			String tbody = html.replace("\\u003c", "<").replace("\\u003e", ">")
-					.replace("\\", "").replace("//", "");
-			String[] tables = StringUtils.substringsBetween(tbody, "<table",
+			String tbody = html.replace("\\u003c", "<").replace("\\u003e", ">").replace("\\", "").replace("//", "")
+					.replace("\n", "").replace("\t", "").replace("\r", "");
+			String table = StringUtils.substringBetween(tbody, "<table",
 					"</table>");
 			// 单程
-			ProcessResultInfo inway = getFlightInfoByStatus(tables[0], arg1, 0);
+			ProcessResultInfo inway = getFlightInfoByStatus(table, arg1, 0);
+
+			String retdates = arg1.getRetDate().replace("-", "");
+			post = new QFPostMethod(postUrl);
+			post.setRequestHeader("Content-Type",
+					"application/json; charset=utf-8");
+			// 设置post提交表单数据
+			JSONObject body = new JSONObject();
+			body.put("origin", arg1.getArr());
+			body.put("destination", arg1.getDep());
+			body.put("dateFrom", retdates);
+			body.put("dateTo", retdates);
+			body.put("iOneWay", true);
+			body.put("iFlightOnly", "0");
+			body.put("iAdult", 1);
+			body.put("iChild", 0);
+			body.put("iInfant", 0);
+			body.put("BoardingClass", "Y");
+			body.put("CurrencyCode", "");
+			body.put("strPromoCode", "");
+			body.put("SearchType", "FARE");
+			body.put("iOther", "0");
+			body.put("otherType", "");
+			body.put("strIpAddress", "");
+			post.setRequestBody(body.toJSONString());
+			int postStatus = httpClient.executeMethod(post);
+			if (postStatus != 200) {
+				result.setRet(true);
+				result.setStatus(Constants.NO_RESULT);
+				return result;
+			}
+			String retHtml= post.getResponseBodyAsString();
+			String rettbody = retHtml.replace("\\u003c", "<").replace("\\u003e", ">")
+					.replace("\n", "").replace("\t", "").replace("\r", "")
+					.replace("\\", "").replace("//", "");
+			String rettable = StringUtils.substringBetween(rettbody, "<table",
+					"</table>");
 			// 往返
-			ProcessResultInfo outway = getFlightInfoByStatus(tables[1], arg1, 1);
+			ProcessResultInfo outway = getFlightInfoByStatus(rettable, arg1, 1);
 			if (!inway.isRet()) {
 				return inway;
 			}
@@ -266,8 +300,11 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 					// 获取机票价格
 					double inPrice = detail.getPrice();
 					double inTax = detail.getTax();
-					String price = String.format("%.2f", inPrice + outPrice);
-					String tax = String.format("%.2f", inTax + outTax);
+					double totalPrice=inPrice + outPrice;
+					double totalTax=inTax + outTax;
+					String price = String.format("%.2f",totalPrice);
+					String tax = String.format("%.2f", totalTax);
+					
 					// 设置明细信息
 					newDetail.setPrice(new Double(price));// 票价
 					newDetail.setTax(new Double(tax));// 税费
@@ -295,6 +332,10 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			result.setRet(false);
 			e.printStackTrace();
 			return result;
+		} finally {
+			if (post != null) {
+				post.releaseConnection();
+			}
 		}
 	}
 
@@ -457,11 +498,10 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			result.setData(flightList);
 			result.setRet(true);
 		} catch (Exception e) {
-			if (!flag) {
-				result.setRet(true);
-				result.setStatus(Constants.NO_RESULT);
+			e.printStackTrace();
+				result.setRet(false);
+				result.setStatus(Constants.PARSING_FAIL);
 				return result;
-			}
 		}
 		return result;
 	}
