@@ -71,9 +71,9 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 		FlightSearchParam searchParam = new FlightSearchParam();
 		searchParam.setDep("JER");
 		searchParam.setArr("ACI");
-		searchParam.setDepDate("2014-07-12");
+		searchParam.setDepDate("2014-07-07");
 		searchParam.setTimeOut("600000");
-		searchParam.setRetDate("2014-07-16");
+		searchParam.setRetDate("2014-07-07");
 		searchParam.setToken("");
 		new Wrapper_gjsairgr001().run(searchParam);
 	}
@@ -211,12 +211,12 @@ public class Wrapper_gjsairgr001 implements QunarCrawler {
 			result.setStatus(Constants.CONNECTION_FAIL);
 			return result;
 		}
-		if (html.contains("Invalid Date") || html.contains("{003}")) {
+		if (html.contains("Invalid Date") ) {
 			result.setRet(false);
 			result.setStatus(Constants.INVALID_DATE);
 			return result;
 		}
-		if (html.contains("No flights found according to your search criteria. Please try again.")) {
+		if (html.contains("No flights found according to your search criteria. Please try again.")|| html.contains("{003}")) {
 			result.setRet(false);
 			result.setStatus(Constants.INVALID_AIRLINE);
 			return result;
