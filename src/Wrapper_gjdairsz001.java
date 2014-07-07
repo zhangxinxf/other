@@ -12,6 +12,8 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.lang.StringUtils;
 
+import succ.Wrapper_gjdairmu004;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
@@ -57,8 +59,9 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 		searchParam.setDepDate("2014-08-16");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
-//		BookingResult result = new Wrapper_gjdairsz001()
-//				.getBookingInfo(searchParam);
+//		BookingResult book=new Wrapper_gjdairmu004().getBookingInfo(searchParam);
+//		JSONObject jsonObject=(JSONObject) JSONObject.toJSON(book);
+//		System.out.println(jsonObject.toJSONString());
 		 new Wrapper_gjdairsz001().run(searchParam);
 	}
 
