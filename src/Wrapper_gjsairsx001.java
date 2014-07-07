@@ -1,4 +1,4 @@
-package succ;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,12 +32,12 @@ import com.qunar.qfwrapper.util.QFHttpClient;
 import com.qunar.qfwrapper.util.QFPostMethod;
 
 /**
- * Asiatravel航空双程
+ * SkyWork航空双程
  * 
  * @author zhangx
  * 
  */
-public class Wrapper_gjsweb00031 implements QunarCrawler {
+public class Wrapper_gjsairsx001 implements QunarCrawler {
 
 	private static final String EXCEPTION_INFO = "excetpion";
 
@@ -66,7 +66,7 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdweb00031");
 		searchParam.setToken("");
-		new Wrapper_gjsweb00031().run(searchParam);
+		new Wrapper_gjsairsx001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
