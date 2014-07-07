@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.httpclient.Header;
-import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
@@ -22,7 +21,6 @@ import com.qunar.qfwrapper.bean.booking.BookingResult;
 import com.qunar.qfwrapper.bean.search.FlightDetail;
 import com.qunar.qfwrapper.bean.search.FlightSearchParam;
 import com.qunar.qfwrapper.bean.search.FlightSegement;
-import com.qunar.qfwrapper.bean.search.OneWayFlightInfo;
 import com.qunar.qfwrapper.bean.search.ProcessResultInfo;
 import com.qunar.qfwrapper.bean.search.RoundTripFlightInfo;
 import com.qunar.qfwrapper.constants.Constants;
@@ -111,7 +109,7 @@ public class Wrapper_gjsairsz001 implements QunarCrawler {
 		try {
 			get = new QFGetMethod(addressUrl);
 			int status = httpClient.executeMethod(get);
-			if (status == HttpStatus.SC_OK) {
+			if (status != HttpStatus.SC_OK) {
 				bookingResult.setRet(false);
 				return bookingResult;
 			}
@@ -129,8 +127,8 @@ public class Wrapper_gjsairsz001 implements QunarCrawler {
 					+ serachArrDate[0];
 			String backDate = arrDate[2] + "." + arrDate[1] + "." + arrDate[0];
 			BookingInfo bookingInfo = new BookingInfo();
-			bookingInfo.setAction(addressUrl);
-			bookingInfo.setMethod("get");
+			bookingInfo.setAction(postUrl);
+			bookingInfo.setMethod("post");
 			Map<String, String> body = new LinkedHashMap<String, String>();
 			body.put("back-date", backDate);
 			body.put("count-aaa", "1");

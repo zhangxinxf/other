@@ -54,10 +54,12 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 		FlightSearchParam searchParam = new FlightSearchParam();
 		searchParam.setDep("DXB");
 		searchParam.setArr("URC");
-		searchParam.setDepDate("2014-08-17");
+		searchParam.setDepDate("2014-08-16");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
-		new Wrapper_gjdairsz001().run(searchParam);
+//		BookingResult result = new Wrapper_gjdairsz001()
+//				.getBookingInfo(searchParam);
+		 new Wrapper_gjdairsz001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
@@ -123,9 +125,8 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 			String thereDate = serachArrDate[2] + "." + serachArrDate[1] + "."
 					+ serachArrDate[0];
 			BookingInfo bookingInfo = new BookingInfo();
-			bookingInfo.setAction(addressUrl);
-			bookingInfo.setMethod("get");
-			bookingInfo.setContentType("application/json; charset=utf-8");
+			bookingInfo.setAction(postUrl);
+			bookingInfo.setMethod("post");
 			Map<String, String> body = new LinkedHashMap<String, String>();
 			body.put("back-date", "");
 			body.put("count-aaa", "1");
