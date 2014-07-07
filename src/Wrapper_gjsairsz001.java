@@ -325,7 +325,7 @@ public class Wrapper_gjsairsz001 implements QunarCrawler {
 					String company = data.getJSONObject("company").getString(
 							"code");
 					String racenumber = data.getString("racenumber");
-					String flightNo = company + "-" + racenumber;
+					String flightNo = company  + racenumber;
 					String depairport = data.getString("origincity");
 					String arrairport = data.getString("destinationcity");
 					String depDate = data.getString("departuredate");

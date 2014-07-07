@@ -310,15 +310,13 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 				OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
 				JSONObject flightInfo = (JSONObject) object;
 				JSONArray detailJson = flightInfo.getJSONArray("flights");
-				JSONArray backward_flights = flightInfo
-						.getJSONArray("backward_flights");
 				for (Object detailObject : detailJson) {
 					FlightSegement flightSegement = new FlightSegement();
 					JSONObject data = (JSONObject) detailObject;
 					String company = data.getJSONObject("company").getString(
 							"code");
 					String racenumber = data.getString("racenumber");
-					String flightNo = company + "-" + racenumber;
+					String flightNo = company  + racenumber;
 					String depairport = data.getString("origincity");
 					String arrairport = data.getString("destinationcity");
 					String depDate = data.getString("departuredate");
