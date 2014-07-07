@@ -43,6 +43,8 @@ public class Wrapper_gjsairsz001 implements QunarCrawler {
 
 	// 表单提交界面
 	private static final String postUrl = "http://booking.somonair.com/en/indexformprocessing";
+	// 获取城市编码
+	private static final String addressUrl = "http://booking.somonair.com/en/json/dependence-cities?isBooking=true&param=origin&type=json";
 	private static final Map<String, String> city = new HashMap<String, String>();
 
 	private static QFHttpClient httpClient = null;
@@ -99,41 +101,64 @@ public class Wrapper_gjsairsz001 implements QunarCrawler {
 	}
 
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
-		String dates = arg0.getDepDate().replace("-", "");
 		BookingResult bookingResult = new BookingResult();
-		BookingInfo bookingInfo = new BookingInfo();
-		bookingInfo.setAction("");
-		bookingInfo.setMethod("get");
-		bookingInfo.setContentType("application/json; charset=utf-8");
-		Map<String, String> body = new LinkedHashMap<String, String>();
-		body.put("origin", arg0.getDep());
-		body.put("destination", arg0.getArr());
-		body.put("dateFrom", dates);
-		body.put("dateTo", dates);
-		body.put("iOneWay", "true");
-		body.put("iFlightOnly", "0");
-		body.put("iAdult", "1");
-		body.put("iChild", "0");
-		body.put("iInfant", "0");
-		body.put("BoardingClass", "Y");
-		body.put("CurrencyCode", "");
-		body.put("strPromoCode", "");
-		body.put("SearchType", "FARE");
-		body.put("iOther", "0");
-		body.put("otherType", "");
-		body.put("strIpAddress", "");
-		bookingInfo.setInputs(body);
-		bookingResult.setData(bookingInfo);
-		bookingResult.setRet(true);
+		QFGetMethod get = null;
+		// 生成http对象
+		httpClient = new QFHttpClient(arg0, false);
+		// 按照浏览器的模式来处理cookie
+		httpClient.getParams().setCookiePolicy(
+				CookiePolicy.BROWSER_COMPATIBILITY);
+		try {
+			get = new QFGetMethod(addressUrl);
+			int status = httpClient.executeMethod(get);
+			if (status == HttpStatus.SC_OK) {
+				bookingResult.setRet(false);
+				return bookingResult;
+			}
+			String cityJson = get.getResponseBodyAsString();
+			String cityStr = StringUtils.substringBetween(cityJson, ":{", "}")
+					.replace("\"", "");
+			String[] values = cityStr.split(",");
+			for (String string : values) {
+				String[] key_value = string.split(":");
+				city.put(key_value[1], key_value[0]);
+			}
+			String[] serachArrDate = arg0.getDepDate().split("-");
+			String[] arrDate = arg0.getRetDate().split("-");
+			String thereDate = serachArrDate[2] + "." + serachArrDate[1] + "."
+					+ serachArrDate[0];
+			String backDate = arrDate[2] + "." + arrDate[1] + "." + arrDate[0];
+			BookingInfo bookingInfo = new BookingInfo();
+			bookingInfo.setAction(addressUrl);
+			bookingInfo.setMethod("get");
+			Map<String, String> body = new LinkedHashMap<String, String>();
+			body.put("back-date", backDate);
+			body.put("count-aaa", "1");
+			body.put("count-rbg", "0");
+			body.put("count-rmg", "0");
+			body.put("origin-city-name", city.get(arg0.getDep()));
+			body.put("destination-city-name", city.get(arg0.getArr()));
+			body.put("pricetable", "123");
+			body.put("there-class", "2232");
+			body.put("there-date", thereDate);
+			body.put("use-back", "1");
+			body.put("x", "40");
+			body.put("y", "7");
+			bookingInfo.setInputs(body);
+			bookingResult.setData(bookingInfo);
+			bookingResult.setRet(true);
+		} catch (Exception e) {
+			bookingResult.setRet(false);
+		} finally {
+			get.releaseConnection();
+		}
 		return bookingResult;
-
 	}
 
 	public String getHtml(FlightSearchParam arg0) {
 		QFPostMethod post = null;
 		QFGetMethod get = null;
 		try {
-			String addressUrl = "http://booking.somonair.com/en/json/dependence-cities?isBooking=true&param=origin&type=json";
 			// 生成http对象
 			httpClient = new QFHttpClient(arg0, false);
 			// 按照浏览器的模式来处理cookie
@@ -155,9 +180,6 @@ public class Wrapper_gjsairsz001 implements QunarCrawler {
 				}
 				get.releaseConnection();
 			}
-			HostConfiguration config = httpClient.getHostConfiguration();
-			config.setProxy("127.0.0.1", 8888);
-			httpClient.setHostConfiguration(config);
 			// 提交表单
 			post = new QFPostMethod(postUrl);
 			// 时间处理
