@@ -52,9 +52,9 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("DXB");
-		searchParam.setArr("URC");
-		searchParam.setDepDate("2014-08-16");
+		searchParam.setDep("DYU");
+		searchParam.setArr("DME");
+		searchParam.setDepDate("2014-08-01");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
 		// BookingResult book=new
