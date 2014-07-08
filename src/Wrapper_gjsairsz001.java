@@ -30,7 +30,7 @@ import com.qunar.qfwrapper.util.QFHttpClient;
 import com.qunar.qfwrapper.util.QFPostMethod;
 
 /**
- * 索蒙航空航空双程
+ * 索蒙航空双程
  * 
  * @author zhangx
  * 

@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -176,6 +177,7 @@ public class Wrapper_gjdairgr001 implements QunarCrawler {
 			body.put("otherType", "");
 			body.put("strIpAddress", "");
 			post.setRequestBody(body.toJSONString());
+			//post.setRequestEntity(new ByteArrayRequestEntity(body.toJSONString().getBytes()));
 			int postStatus = httpClient.executeMethod(post);
 			if (postStatus != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;

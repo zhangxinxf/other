@@ -12,8 +12,6 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.lang.StringUtils;
 
-import succ.Wrapper_gjdairmu004;
-
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
@@ -59,10 +57,11 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 		searchParam.setDepDate("2014-08-16");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
-//		BookingResult book=new Wrapper_gjdairmu004().getBookingInfo(searchParam);
-//		JSONObject jsonObject=(JSONObject) JSONObject.toJSON(book);
-//		System.out.println(jsonObject.toJSONString());
-		 new Wrapper_gjdairsz001().run(searchParam);
+		// BookingResult book=new
+		// Wrapper_gjdairsz001().getBookingInfo(searchParam);
+		// JSONObject jsonObject=(JSONObject) JSONObject.toJSON(book);
+		// System.out.println(jsonObject.toJSONString());
+		new Wrapper_gjdairsz001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
@@ -72,7 +71,7 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 			String filePath = "G:\\air.html";
 			File f = new File(filePath);
 			// if (!f.exists()) {
-			// html = new Wrapper_gjdairgr001().getHtml(searchParam);
+			// html = new Wrapper_gjdairsz001().getHtml(searchParam);
 			// html = html.replace("\\u003c", "<").replace("\\u003e", ">")
 			// .replace("\\", "").replace("//", "");
 			// Files.write(html, f, Charsets.UTF_8);
@@ -319,7 +318,7 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 					String company = data.getJSONObject("company").getString(
 							"code");
 					String racenumber = data.getString("racenumber");
-					String flightNo = company  + racenumber;
+					String flightNo = company + racenumber;
 					String depairport = data.getString("origincity");
 					String arrairport = data.getString("destinationcity");
 					String depDate = data.getString("departuredate");

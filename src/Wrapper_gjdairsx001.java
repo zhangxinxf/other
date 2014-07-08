@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.NameValuePair;
-import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.lang.StringUtils;
 
 import com.google.common.base.Charsets;
@@ -41,9 +40,9 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 	private static final String EXCEPTION_INFO = "excetpion";
 
 	// 表单提交界面
-	private static final String postUrl = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
-	// 主页面
-	private static final String root = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
+	private static final String postUrl= "https://booking.flyskywork.com/default.aspx";
+	//获取数据界面
+	private static final String geturl="https://booking.flyskywork.com/WebService/B2cService.asmx/GetAvailability";
 	private static Map<String, String> data = new HashMap<String, String>();
 	{
 		data.put("BJS", "PEK");
@@ -103,21 +102,13 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
 		BookingResult bookingResult = new BookingResult();
 		BookingInfo bookingInfo = new BookingInfo();
-		bookingInfo.setAction(root);
+		bookingInfo.setAction(geturl);
 		bookingInfo.setMethod("post");
 		QFGetMethod get = null;
 		try {
-			// 生成http对象
-			httpClient = new QFHttpClient(arg0, false);
-			// 按照浏览器的模式来处理cookie
-			httpClient.getParams().setCookiePolicy(
-					CookiePolicy.BROWSER_COMPATIBILITY);
-			get = new QFGetMethod(root);
-			httpClient.executeMethod(get);
-			String response = get.getResponseBodyAsString();
-			String viewState = StringUtils.substringBetween(response,
+			String viewState = StringUtils.substringBetween("",
 					"id=\"__VIEWSTATE\" value=\"", "\"");
-			String perviouspage = StringUtils.substringBetween(response,
+			String perviouspage = StringUtils.substringBetween("",
 					"id=\"__PREVIOUSPAGE\" value=\"", "\"");
 			String[] dates = arg0.getDepDate().split("-");
 			Map<String, String> body = new LinkedHashMap<String, String>();
@@ -172,16 +163,6 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 		QFPostMethod post = null;
 		QFGetMethod get = null;
 		try {
-			// 生成http对象
-			httpClient = new QFHttpClient(arg0, false);
-			// 按照浏览器的模式来处理cookie
-			httpClient.getParams().setCookiePolicy(
-					CookiePolicy.BROWSER_COMPATIBILITY);
-			get = new QFGetMethod(root);
-			int status = httpClient.executeMethod(get);
-			if (status != HttpStatus.SC_OK) {
-				return EXCEPTION_INFO;
-			}
 			String response = get.getResponseBodyAsString();
 			get.releaseConnection();
 			String viewState = StringUtils.substringBetween(response,
@@ -190,7 +171,6 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 					"id=\"__PREVIOUSPAGE\" value=\"", "\"");
 			// 提交表单
 			post = new QFPostMethod(postUrl);
-			post.setRequestHeader("Referer", root);
 			// 时间处理
 			String[] serachArrDate = arg0.getDepDate().split("-");
 			// 设置post提交表单数据
