@@ -1,5 +1,6 @@
 
 
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -70,7 +71,7 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 		searchParam.setToken("");
 		BookingResult book=new Wrapper_gjsweb00031().getBookingInfo(searchParam);
 		System.out.println(JSON.toJSONString(book));
-		//new Wrapper_gjsweb00031().run(searchParam);
+		new Wrapper_gjsweb00031().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
