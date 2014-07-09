@@ -30,7 +30,7 @@ import com.qunar.qfwrapper.util.QFHttpClient;
 import com.qunar.qfwrapper.util.QFPostMethod;
 
 /**
- * 索蒙航空航空单程
+ * 索蒙航空单程
  * 
  * @author zhangx
  * 
@@ -53,7 +53,7 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
 		searchParam.setDep("DYU");
-		searchParam.setArr("DME");
+		searchParam.setArr("MOW");
 		searchParam.setDepDate("2014-08-01");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");

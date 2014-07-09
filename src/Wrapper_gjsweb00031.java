@@ -1,4 +1,5 @@
-package succ;
+
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.lang.StringUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
@@ -66,7 +68,9 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdweb00031");
 		searchParam.setToken("");
-		new Wrapper_gjsweb00031().run(searchParam);
+		BookingResult book=new Wrapper_gjsweb00031().getBookingInfo(searchParam);
+		System.out.println(JSON.toJSONString(book));
+		//new Wrapper_gjsweb00031().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
@@ -142,22 +146,22 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 			body.put("QuickSearch_View$RouteType", "Radio_return");
 			body.put(
 					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
-					dates[2]);
+					Integer.parseInt(dates[2]) + "");
 			body.put(
 					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Month",
 					Integer.parseInt(dates[1]) + "");
 			body.put(
 					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Year",
-					dates[0]);
+					Integer.parseInt(dates[0]) + "");
 			body.put(
 					"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Days",
-					serachArrDate[2]);
+					Integer.parseInt(serachArrDate[2]) + "");
 			body.put(
 					"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Month",
 					Integer.parseInt(serachArrDate[1]) + "");
 			body.put(
 					"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Year",
-					serachArrDate[0]);
+					Integer.parseInt(serachArrDate[0]) + "");
 			body.put(
 					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
 					"ANY");
@@ -229,22 +233,22 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 							"Radio_return"),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
-							serachDepDate[2]),
+							Integer.parseInt(serachDepDate[2])+""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Month",
 							Integer.parseInt(serachDepDate[1]) + ""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Year",
-							serachDepDate[0]),
+							Integer.parseInt(serachDepDate[0])+""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Days",
-							serachArrDate[2]),
+							Integer.parseInt(serachArrDate[2])+""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Month",
 							Integer.parseInt(serachArrDate[1]) + ""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Year",
-							serachArrDate[0]),
+							Integer.parseInt(serachArrDate[0])+""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
 							"ANY"),
