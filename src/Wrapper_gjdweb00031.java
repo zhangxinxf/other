@@ -1,5 +1,3 @@
-
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -66,9 +64,10 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdweb00031");
 		searchParam.setToken("");
-		BookingResult book=new Wrapper_gjdweb00031().getBookingInfo(searchParam);
+		BookingResult book = new Wrapper_gjdweb00031()
+				.getBookingInfo(searchParam);
 		System.out.println(JSON.toJSONString(book));
-		//new Wrapper_gjdweb00031().run(searchParam);
+		// new Wrapper_gjdweb00031().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
@@ -118,8 +117,23 @@ public class Wrapper_gjdweb00031 implements QunarCrawler {
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			get = new QFGetMethod(root);
-			httpClient.executeMethod(get);
-			String response = get.getResponseBodyAsString();
+			String response = "";
+			for (int i = 0; i < 5; i++) {
+				try {
+					int status = httpClient.executeMethod(get);
+					if (status == HttpStatus.SC_OK) {
+						response = get.getResponseBodyAsString();
+						break;
+					}
+					Thread.sleep(1000);
+				} catch (Exception e) {
+					continue;
+				}
+			}
+			if (StringUtils.isBlank(response)) {
+				bookingResult.setRet(false);
+				return bookingResult;
+			}
 			String viewState = StringUtils.substringBetween(response,
 					"id=\"__VIEWSTATE\" value=\"", "\"");
 			String perviouspage = StringUtils.substringBetween(response,

@@ -108,12 +108,23 @@ public class Wrapper_gjsairsz001 implements QunarCrawler {
 				CookiePolicy.BROWSER_COMPATIBILITY);
 		try {
 			get = new QFGetMethod(addressUrl);
-			int status = httpClient.executeMethod(get);
-			if (status != HttpStatus.SC_OK) {
+			String cityJson = "";
+			for (int i = 0; i < 5; i++) {
+				try {
+					int status = httpClient.executeMethod(get);
+					if (status == HttpStatus.SC_OK) {
+						cityJson = get.getResponseBodyAsString();
+						break;
+					}
+					Thread.sleep(1000);
+				} catch (Exception e) {
+					continue;
+				}
+			}
+			if (StringUtils.isBlank(cityJson)) {
 				bookingResult.setRet(false);
 				return bookingResult;
 			}
-			String cityJson = get.getResponseBodyAsString();
 			String cityStr = StringUtils.substringBetween(cityJson, ":{", "}")
 					.replace("\"", "");
 			String[] values = cityStr.split(",");

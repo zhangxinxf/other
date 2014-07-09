@@ -122,8 +122,24 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			get = new QFGetMethod(root);
-			httpClient.executeMethod(get);
-			String response = get.getResponseBodyAsString();
+			
+			String response = "";
+			for (int i = 0; i < 5; i++) {
+				try {
+					int status = httpClient.executeMethod(get);
+					if (status == HttpStatus.SC_OK) {
+						response = get.getResponseBodyAsString();
+						break;
+					}
+					Thread.sleep(1000);
+				} catch (Exception e) {
+					continue;
+				}
+			}
+			if (StringUtils.isBlank(response)) {
+				bookingResult.setRet(false);
+				return bookingResult;
+			}
 			String viewState = StringUtils.substringBetween(response,
 					"id=\"__VIEWSTATE\" value=\"", "\"");
 			String perviouspage = StringUtils.substringBetween(response,
