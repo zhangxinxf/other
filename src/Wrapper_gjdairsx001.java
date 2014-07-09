@@ -1,7 +1,3 @@
-
-
-
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -46,11 +42,9 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 
 	// 表单提交界面
 	private static final String postUrl = "https://booking.flyskywork.com/WebService/B2cService.asmx/GetAvailability";
+	// 首页，获取城市三字码
+	private static final String firstUrl = "http://flyskywork.com/en";
 	private static Map<String, String> data = new HashMap<String, String>();
-	{
-		data.put("BJS", "PEK");
-		data.put("SIA", "XIY");
-	}
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd");
 
@@ -187,6 +181,24 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 					.format("https://booking.flyskywork.com/default.aspx?oneway=1&ori=%s&des=%s&departure=%s&dep=%s&return=&ret=&adt=1&chd=0&inf=0&currency=EUR&langculture=de-de&web=swk&submit=&pro=",
 							arg0.getDep(), arg0.getArr(), dep,
 							arg0.getDepDate());
+			get = new QFGetMethod(firstUrl);
+			int cityStauts = httpClient.executeMethod(get);
+			if (cityStauts != HttpStatus.SC_OK) {
+				return EXCEPTION_INFO;
+			}
+			String cityStr=get.getResponseBodyAsString();
+			String selects=StringUtils.substringBetween(cityStr,"<dd id=\"des-element\">","</dd>");
+			String options[]=StringUtils.substringsBetween(selects, " <option", "</option>");
+			if(null!=options&&options.length>0){
+				for (String option : options) {
+					if(option.contains(")")){
+					String  str=StringUtils.substringAfter(option,">");
+					String values[]=str.split(" ");
+					data.put(values[0], values[1].replace("(", "").replace(")", ""));
+					}
+				}
+			}
+			
 			// 提交表单
 			get = new QFGetMethod(getUrl);
 			int getStatus = httpClient.executeMethod(get);
@@ -249,7 +261,7 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 	public ProcessResultInfo process(String html, FlightSearchParam arg0) {
 		ProcessResultInfo result = new ProcessResultInfo();
 		// 判断票是否已卖完
-		if (StringUtils.isBlank(EXCEPTION_INFO)||EXCEPTION_INFO.equals(html)) {
+		if (StringUtils.isBlank(EXCEPTION_INFO) || EXCEPTION_INFO.equals(html)) {
 			result.setRet(false);
 			result.setStatus(Constants.CONNECTION_FAIL);
 			return result;
@@ -260,7 +272,7 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 			return result;
 		}
 		// 需要有明显的提示语句，才能判断是否INVALID_DATE|INVALID_AIRLINE|NO_RESULT
-		if (html.contains("No flight found. Please modify your search by using quick search box at the left side, or try again later")) {
+		if (html.contains("there are no scheduled flights for your requested flight date")) {
 			result.setRet(true);
 			result.setStatus(Constants.NO_RESULT);
 			return result;
@@ -276,8 +288,9 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 			String table = StringUtils.substringBetween(html,
 					"<table id=\"tb_Outward\" class=\"SelectFlight\">",
 					"</table>");
-			// 第一个table和最后一个table是分页信息		
-			String tables[] =  StringUtils.substringsBetween(table,"<tr class","</tr>");
+			// 第一个table和最后一个table是分页信息
+			String tables[] = StringUtils.substringsBetween(table, "<tr class",
+					"</tr>");
 			if (tables.length <= 1) {
 				result.setRet(true);
 				result.setStatus(Constants.NO_RESULT);
