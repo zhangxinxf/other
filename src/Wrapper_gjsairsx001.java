@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -6,19 +5,20 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.lang.StringUtils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
+import com.qunar.qfwrapper.bean.search.BaseFlightInfo;
 import com.qunar.qfwrapper.bean.search.FlightDetail;
 import com.qunar.qfwrapper.bean.search.FlightSearchParam;
 import com.qunar.qfwrapper.bean.search.FlightSegement;
@@ -42,30 +42,26 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 	private static final String EXCEPTION_INFO = "excetpion";
 
 	// 表单提交界面
-	private static final String postUrl = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
-	// 主页面
-	private static final String root = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
-
+	private static final String postUrl = "https://booking.flyskywork.com/WebService/B2cService.asmx/GetAvailability";
+	// 首页，获取城市三字码
+	private static final String firstUrl = "http://flyskywork.com/en";
 	private static Map<String, String> data = new HashMap<String, String>();
-	{
-		data.put("BJS", "PEK");
-		data.put("SIA", "XIY");
-	}
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd");
-
 	private static QFHttpClient httpClient = null;
 
 	public static void main(String[] args) {
 		//
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("USM");
-		searchParam.setArr("KCH");
-		searchParam.setDepDate("2014-07-12");
-		searchParam.setRetDate("2014-07-12");
+		searchParam.setDep("BCN");
+		searchParam.setArr("BRN");
+		searchParam.setDepDate("2014-07-26");
+		searchParam.setRetDate("2014-08-01");
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdweb00031");
 		searchParam.setToken("");
+		BookingResult book=	new Wrapper_gjsairsx001().getBookingInfo(searchParam);
+		System.out.println(JSON.toJSONString(book));
 		new Wrapper_gjsairsx001().run(searchParam);
 	}
 
@@ -108,78 +104,29 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
 		BookingResult bookingResult = new BookingResult();
 		BookingInfo bookingInfo = new BookingInfo();
-		bookingInfo.setAction(root);
-		bookingInfo.setMethod("post");
-		QFGetMethod get = null;
-		try {
-			// 生成http对象
-			httpClient = new QFHttpClient(arg0, false);
-			// 按照浏览器的模式来处理cookie
-			httpClient.getParams().setCookiePolicy(
-					CookiePolicy.BROWSER_COMPATIBILITY);
-			get = new QFGetMethod(root);
-			httpClient.executeMethod(get);
-			String response = get.getResponseBodyAsString();
-			String viewState = StringUtils.substringBetween(response,
-					"id=\"__VIEWSTATE\" value=\"", "\"");
-			String perviouspage = StringUtils.substringBetween(response,
-					"id=\"__PREVIOUSPAGE\" value=\"", "\"");
-			String[] dates = arg0.getDepDate().split("-");
-			String[] serachArrDate = arg0.getRetDate().split("-");
-			Map<String, String> body = new LinkedHashMap<String, String>();
-			body.put("__EVENTTARGET", "");
-			body.put("__EVENTARGUMENT", "");
-			body.put("__LASTFOCUS", "");
-			body.put("__VIEWSTATE", viewState);
-			body.put("__PREVIOUSPAGE", perviouspage);
-			body.put(
-					"DisplayTopSubmenuMain1$DisplayLanguageSelector1$Dropdownlist_Languages",
-					"en-US");
-			body.put("QuickSearch_View$CitySelect_DepartCity$TextBox_CityCode",
-					arg0.getDep());
-			body.put("QuickSearch_View$CitySelect_ReturnCity$TextBox_CityCode",
-					arg0.getArr());
-			body.put("QuickSearch_View$RouteType", "Radio_return");
-			body.put(
-					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
-					dates[2]);
-			body.put(
-					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Month",
-					Integer.parseInt(dates[1]) + "");
-			body.put(
-					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Year",
-					dates[0]);
-			body.put(
-					"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Days",
-					serachArrDate[2]);
-			body.put(
-					"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Month",
-					Integer.parseInt(serachArrDate[1]) + "");
-			body.put(
-					"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Year",
-					serachArrDate[0]);
-			body.put(
-					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
-					"ANY");
-			body.put("QuickSearch_View$Dropdownlist_SeatClass", "Economy");
-			body.put("QuickSearch_View$Radiobuttonlist_SearchType", "0");
-			body.put(
-					"QuickSearch_View$CarrierSelect_Carrier$TextBox_CarrierCode",
-					"");
-			body.put("QuickSearch_View$RadioButton_Sort", "0");
-			body.put("QuickSearch_View$Dropdownlist_Adult", "1");
-			body.put("QuickSearch_View$Dropdownlist_child", "0");
-			body.put("QuickSearch_View$Button_find", "Find");
-			body.put("QuickSearch_View$TextBox_AdvSearch", "False");
-			bookingInfo.setContentType("application/x-www-form-urlencoded");
-			bookingInfo.setInputs(body);
-			bookingResult.setData(bookingInfo);
-			bookingResult.setRet(true);
-		} catch (Exception e) {
-			bookingResult.setRet(false);
-		} finally {
-			get.releaseConnection();
-		}
+		bookingInfo.setAction("https://booking.flyskywork.com/default.aspx");
+		bookingInfo.setMethod("get");
+		String[] depDate = arg0.getDepDate().split("-");
+		String[] retDate = arg0.getRetDate().split("-");
+		String dep = depDate[2] + "/" + depDate[1] + "/" + depDate[0];
+		String ret = retDate[2] + "/" + retDate[1] + "/" + retDate[0];
+		Map<String, String> map=new LinkedHashMap<String, String>();
+		map.put("ori", arg0.getDep());
+		map.put("des", arg0.getArr());
+		map.put("departure", dep);
+		map.put("dep", arg0.getDepDate());
+		map.put("return", ret);
+		map.put("ret", arg0.getRetDate());
+		map.put("adt", "1");
+		map.put("chd", "0");
+		map.put("inf", "0");
+		map.put("currency", "EUR");
+		map.put("langculture", "en-us");
+		map.put("web", "swk");
+		map.put("submit", "");
+		bookingInfo.setInputs(map);
+		bookingResult.setRet(true);
+		bookingResult.setData(bookingInfo);
 		return bookingResult;
 	}
 
@@ -192,137 +139,87 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 			// 按照浏览器的模式来处理cookie
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
-			get = new QFGetMethod(root);
-			int status = httpClient.executeMethod(get);
-			if (status != HttpStatus.SC_OK) {
+			// 指定协议名称和默认的端口号
+//			Protocol myhttps = new Protocol("https",
+//					new MySecureProtocolSocketFactory(), 443);
+//			// 注册刚才创建的https 协议对象
+//			Protocol.registerProtocol("https", myhttps);
+			// 设置时间参数
+			String[] depDate = arg0.getDepDate().split("-");
+			String[] retDate = arg0.getRetDate().split("-");
+			String dep = depDate[2] + "/" + depDate[1] + "/" + depDate[0];
+			String ret = retDate[2] + "/" + retDate[1] + "/" + retDate[0];
+			String getUrl = String
+					.format("https://booking.flyskywork.com/default.aspx?ori=%s&des=%s&departure=%s&dep=%s&return=%s&ret=%s&adt=1&chd=0&inf=0&currency=EUR&langculture=en-us&web=swk&submit=",
+							arg0.getDep(), arg0.getArr(), dep,
+							arg0.getDepDate(), ret, arg0.getRetDate());
+			get = new QFGetMethod(firstUrl);
+			int cityStauts = httpClient.executeMethod(get);
+			if (cityStauts != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;
 			}
-			String response = get.getResponseBodyAsString();
-			get.releaseConnection();
-			String viewState = StringUtils.substringBetween(response,
-					"id=\"__VIEWSTATE\" value=\"", "\"");
-			String perviouspage = StringUtils.substringBetween(response,
-					"id=\"__PREVIOUSPAGE\" value=\"", "\"");
-			// 提交表单
-			post = new QFPostMethod(postUrl);
-			post.setRequestHeader("Referer", root);
-			// 时间处理
-			String[] serachDepDate = arg0.getDepDate().split("-");
-			String[] serachArrDate = arg0.getRetDate().split("-");
-			// 设置post提交表单数据
-			NameValuePair[] parametersBody = new NameValuePair[] {
-					new NameValuePair("__EVENTTARGET", ""),
-					new NameValuePair("__EVENTARGUMENT", ""),
-					new NameValuePair("__LASTFOCUS", ""),
-					new NameValuePair("__VIEWSTATE", viewState),
-					new NameValuePair("__PREVIOUSPAGE", perviouspage),
-					new NameValuePair(
-							"DisplayTopSubmenuMain1$DisplayLanguageSelector1$Dropdownlist_Languages",
-							"en-US"),
-					new NameValuePair(
-							"QuickSearch_View$CitySelect_DepartCity$TextBox_CityCode",
-							arg0.getDep()),
-					new NameValuePair(
-							"QuickSearch_View$CitySelect_ReturnCity$TextBox_CityCode",
-							arg0.getArr()),
-					new NameValuePair("QuickSearch_View$RouteType",
-							"Radio_return"),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
-							serachDepDate[2]),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Month",
-							Integer.parseInt(serachDepDate[1]) + ""),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Year",
-							serachDepDate[0]),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Days",
-							serachArrDate[2]),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Month",
-							Integer.parseInt(serachArrDate[1]) + ""),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Year",
-							serachArrDate[0]),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
-							"ANY"),
-					new NameValuePair(
-							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Timing",
-							"ANY"),
-					new NameValuePair(
-							"QuickSearch_View$Dropdownlist_SeatClass",
-							"Economy"),
-					new NameValuePair(
-							"QuickSearch_View$Radiobuttonlist_SearchType", "0"),
-					new NameValuePair(
-							"QuickSearch_View$CarrierSelect_Carrier$TextBox_CarrierCode",
-							""),
-					new NameValuePair("QuickSearch_View$RadioButton_Sort", "0"),
-					new NameValuePair("QuickSearch_View$Dropdownlist_Adult",
-							"1"),
-					new NameValuePair("QuickSearch_View$Dropdownlist_child",
-							"0"),
-					new NameValuePair("QuickSearch_View$Button_find", "Find"),
-					new NameValuePair("QuickSearch_View$TextBox_AdvSearch",
-							"False") };
-			// post.setRequestEntity(new
-			// ByteArrayRequestEntity(raw.getBytes(),"application/x-www-form-urlencoded"));
-			post.setRequestBody(parametersBody);
-			post.setFollowRedirects(false);
-			String cookie = StringUtils.join(
-					httpClient.getState().getCookies(), ";");
-			post.setRequestHeader("Cookie", cookie);
-			int postStatus = httpClient.executeMethod(post);
-			String url = "";
-			if (postStatus == HttpStatus.SC_MOVED_TEMPORARILY
-					|| postStatus == HttpStatus.SC_MOVED_PERMANENTLY) {
-				Header location = post.getResponseHeader("Location");
-				if (location != null) {
-					url = location.getValue();
-					if (!url.startsWith("http")) {
-						url = post.getURI().getScheme()
-								+ "://"
-								+ post.getURI().getHost()
-								+ (post.getURI().getPort() == -1 ? ""
-										: (":" + post.getURI().getPort()))
-								+ url;
+			String cityStr=get.getResponseBodyAsString();
+			String selects=StringUtils.substringBetween(cityStr,"<dd id=\"des-element\">","</dd>");
+			String options[]=StringUtils.substringsBetween(selects, " <option", "</option>");
+			if(null!=options&&options.length>0){
+				for (String option : options) {
+					if(option.contains(")")){
+					String  str=StringUtils.substringAfter(option,">");
+					String values[]=str.split(" ");
+					data.put(values[0], values[1].replace("(", "").replace(")", ""));
 					}
 				}
-			} else {
-				return EXCEPTION_INFO;
 			}
-			get = new QFGetMethod(url);
-			cookie = StringUtils.join(httpClient.getState().getCookies(), ";");
-			get.setRequestHeader("Cookie", cookie);
-			get.setRequestHeader("Referer", postUrl);
+			if (null != options && options.length > 0) {
+				for (String option : options) {
+					if (option.contains(")")) {
+						String str = StringUtils.substringAfter(option, ">");
+						String values[] = str.split(" ");
+						data.put(values[0],
+								values[1].replace("(", "").replace(")", ""));
+					}
+				}
+			}
+
+			// 提交表单
+			get = new QFGetMethod(getUrl);
 			int getStatus = httpClient.executeMethod(get);
 			if (getStatus != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;
 			}
-			get.releaseConnection();
-			String processUrl = url.replace("Search.Wait.aspx",
-					"Search.Wait.Process.aspx");
-			get = new QFGetMethod(processUrl);
-			cookie = StringUtils.join(httpClient.getState().getCookies(), ";");
-			get.setRequestHeader("Cookie", cookie);
-			get.setRequestHeader("Referer", url);
-			int proces = httpClient.executeMethod(get);
-			if (proces != HttpStatus.SC_OK) {
+			post = new QFPostMethod(postUrl);
+			String cookie = StringUtils.join(
+					httpClient.getState().getCookies(), ";");
+			post.setRequestHeader("Cookie", cookie);
+			post.setRequestHeader("Referer", getUrl);
+			post.setRequestHeader("Origin", " https://booking.flyskywork.com");
+			post.setRequestHeader("Content-Type",
+					"application/json; charset=UTF-8");
+			JSONObject json = new JSONObject();
+			json.put("BoardingClass", "");
+			json.put("CurrencyCode", "EUR");
+			json.put("SearchType", "FARE");
+			json.put("dateFrom", depDate[0] + depDate[1] + depDate[2]);
+			json.put("dateTo", retDate[0] + retDate[1] + retDate[2]);
+			json.put("destination", arg0.getArr());
+			json.put("iAdult", "1");
+			json.put("iChild", "0");
+			json.put("iFlightOnly", "0");
+			json.put("iInfant", "0");
+			json.put("iOneWay", "false");
+			json.put("iOther", "0");
+			json.put("otherType", "");
+			json.put("origin", arg0.getDep());
+			json.put("strIpAddress", "");
+			json.put("strPromoCode", "");
+			json.put("langculture", "en-us");
+			post.setRequestEntity(new ByteArrayRequestEntity(json.toString()
+					.getBytes()));
+			int status = httpClient.executeMethod(post);
+			if (status != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;
 			}
-			get.releaseConnection();
-			String serachUrl = url.replace("Search.Wait.aspx", "Search.aspx");
-			get = new QFGetMethod(serachUrl);
-			cookie = StringUtils.join(httpClient.getState().getCookies(), ";");
-			get.setRequestHeader("Referer", url);
-			get.setRequestHeader("Cookie", cookie);
-			int succ = httpClient.executeMethod(get);
-			if (succ != HttpStatus.SC_OK) {
-				return EXCEPTION_INFO;
-			}
-			return get.getResponseBodyAsString();
+			return post.getResponseBodyAsString();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return EXCEPTION_INFO;
@@ -345,7 +242,7 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 	public ProcessResultInfo process(String html, FlightSearchParam arg0) {
 		ProcessResultInfo result = new ProcessResultInfo();
 		// 判断票是否已卖完
-		if (EXCEPTION_INFO.equals(html)) {
+		if (StringUtils.isBlank(EXCEPTION_INFO) || EXCEPTION_INFO.equals(html)) {
 			result.setRet(false);
 			result.setStatus(Constants.CONNECTION_FAIL);
 			return result;
@@ -356,24 +253,25 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 			return result;
 		}
 		// 需要有明显的提示语句，才能判断是否INVALID_DATE|INVALID_AIRLINE|NO_RESULT
-		if (html.contains("No flight found. Please modify your search by using quick search box at the left side, or try again later")) {
+		if (html.contains("there are no scheduled flights for your requested flight date")) {
 			result.setRet(true);
 			result.setStatus(Constants.NO_RESULT);
 			return result;
 		}
-		List<RoundTripFlightInfo> flightList = new ArrayList<RoundTripFlightInfo>();
-		String priceReg = "(\\d)+,?\\d+(\\.){1}\\d+";
-		Pattern pricePattern = Pattern.compile(priceReg);
-		QFPostMethod post = null;
+		html = html.replace("\\u003c", "<").replace("\\u003e", ">")
+				.replace("\\n", "").replace("\\r", "").replace("\\t", "")
+				.replace("\\", "").replace("//", "");
+		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
+		List<OneWayFlightInfo> retList = new ArrayList<OneWayFlightInfo>();
 		try {
 			// 截取字符串
-			StringBuffer str = new StringBuffer("<table class=\"box1\"");
-			String table = StringUtils.substringAfter(html, str.toString());
-			table = StringUtils.substringBefore(table.toString(),
-					"TicketingConditions");
+			String oneWayTable = StringUtils.substringBetween(html,
+					"<table id=\"tb_Outward\" class=\"SelectFlight\">",
+					"</table>");
 			// 第一个table和最后一个table是分页信息
-			String tables[] = table.split("</tr><tr>");
-			if (tables.length <= 1) {
+			String oneWayTables[] = StringUtils.substringsBetween(oneWayTable,
+					"<tr class", "</tr>");
+			if (oneWayTables.length <= 1) {
 				result.setRet(true);
 				result.setStatus(Constants.NO_RESULT);
 				return result;
@@ -384,134 +282,61 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 					.get(depKey);
 			String arr = StringUtils.isBlank(data.get(arrKey)) ? arrKey : data
 					.get(arrKey);
-			// 获取航班列表信息
-			findListbyPageNum(flightList, arg0, pricePattern, tables, dep, arr);
 
-			String[] pageHtml = StringUtils.substringsBetween(tables[0], "(",
-					")");
-			if (null != pageHtml && pageHtml.length > 0) {
-				String[] serachArrDate = arg0.getDepDate().split("-");
-				String[] serachDepDate = arg0.getRetDate().split("-");
-				String key = StringUtils.substringBetween(html,
-						"id=\"__VIEWSTATE_KEY\" value=\"", "\"").replace(
-						"&amp;", "&");
-				String perviouspage = StringUtils.substringBetween(html,
-						"id=\"__PREVIOUSPAGE\" value=\"", "\"");
-				String action = "http://flight.asiatravel.com/"
-						+ StringUtils.substringAfter(key, "/");
-				int len = pageHtml.length > 10 ? 10 : pageHtml.length;
-				for (int k = 0; k < len; k++) {
-					String pageValue = pageHtml[k];
-					String id = StringUtils.substringBefore(
-							pageValue.replace("'", ""), ",");
-					// 设置post提交表单数据
-					NameValuePair[] parametersBody = new NameValuePair[] {
-							new NameValuePair("__EVENTTARGET", id),
-							new NameValuePair("__EVENTARGUMENT", ""),
-							new NameValuePair("__LASTFOCUS", ""),
-							new NameValuePair("__VIEWSTATE_KEY", key),
-							new NameValuePair("__VIEWSTATE", ""),
-							new NameValuePair("__PREVIOUSPAGE", perviouspage),
-							new NameValuePair(
-									"Displaytopsubmenuflight1$DisplayLanguageSelector1$Dropdownlist_Languages",
-									"en-US"),
-							new NameValuePair(
-									"QuickSearch_View$CitySelect_DepartCity$TextBox_CityCode",
-									arg0.getDep()),
-							new NameValuePair(
-									"QuickSearch_View$CitySelect_ReturnCity$TextBox_CityCode",
-									arg0.getArr()),
-							new NameValuePair("QuickSearch_View$RouteType",
-									"Radio_return"),
-							new NameValuePair(
-									"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
-									serachDepDate[2]),
-							new NameValuePair(
-									"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Month",
-									Integer.parseInt(serachDepDate[1]) + ""),
-							new NameValuePair(
-									"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Year",
-									serachDepDate[0]),
-							new NameValuePair(
-									"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Days",
-									serachArrDate[2]),
-							new NameValuePair(
-									"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Month",
-									Integer.parseInt(serachArrDate[1]) + ""),
-							new NameValuePair(
-									"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Year",
-									serachArrDate[0]),
-							new NameValuePair(
-									"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
-									"ANY"),
-							new NameValuePair(
-									"QuickSearch_View$Dropdownlist_SeatClass",
-									"Economy"),
-							new NameValuePair(
-									"QuickSearch_View$Radiobuttonlist_SearchType",
-									"0"),
-							new NameValuePair(
-									"QuickSearch_View$CarrierSelect_Carrier$TextBox_CarrierCode",
-									""),
-							new NameValuePair(
-									"QuickSearch_View$RadioButton_Sort", "0"),
-							new NameValuePair(
-									"QuickSearch_View$Dropdownlist_Adult", "1"),
-							new NameValuePair(
-									"QuickSearch_View$Dropdownlist_child", "0"),
-							new NameValuePair(
-									"UserControl_DisplayQuickSearchHotel$Dropdownlist_Room",
-									"0"),
-							new NameValuePair("ErrorCode", "0"),
-							new NameValuePair(
-									"QuickSearch_View$TextBox_AdvSearch",
-									"False") };
-					// 分页数据
-					try {
-						String cookie = StringUtils.join(httpClient.getState()
-								.getCookies(), ";");
-						post = new QFPostMethod(action);
-						post.setRequestHeader("Content-Type",
-								"application/x-www-form-urlencoded");
-						post.setRequestHeader("Cookie", cookie);
-						post.setRequestHeader("Referer", action);
-						post.setRequestBody(parametersBody);
-						// HostConfiguration configuration = httpClient
-						// .getHostConfiguration();
-						// configuration.setProxy("127.0.0.1", 8888);
-						// httpClient.setHostConfiguration(configuration);
-						int status = httpClient.executeMethod(post);
-						if (status != HttpStatus.SC_OK) {
-							result.setStatus(Constants.PARSING_FAIL);
-							result.setRet(false);
-							return result;
-						}
-						String pageNumHtml = post.getResponseBodyAsString();
-						String pagetable = StringUtils.substringAfter(
-								pageNumHtml, str.toString());
-						pagetable = StringUtils.substringBefore(
-								pagetable.toString(), "TicketingConditions");
-						// 第一个table和最后一个table是分页信息
-						String pageTables[] = pagetable.split("</tr><tr>");
-						if (pageTables.length <= 1) {
-							result.setRet(true);
-							result.setStatus(Constants.NO_RESULT);
-							return result;
-						}
-						// 获取航班列表信息
-						findListbyPageNum(flightList, arg0, pricePattern,
-								pageTables, dep, arr);
-					} catch (Exception e) {
-						result.setStatus(Constants.CONNECTION_FAIL);
-						result.setRet(false);
-						return result;
-					} finally {
-						post.releaseConnection();
-					}
+			// 截取字符串
+			String retTable = StringUtils.substringBetween(html,
+					"<table id=\"tb_Return\" class=\"SelectFlight\">",
+					"</table>");
+			// 第一个table和最后一个table是分页信息
+			String retTables[] = StringUtils.substringsBetween(retTable,
+					"<tr class", "</tr>");
+			if (oneWayTables.length <= 1) {
+				result.setRet(true);
+				result.setStatus(Constants.NO_RESULT);
+				return result;
+			}
+			String depDate = arg0.getDepDate();
+			String retDate = arg0.getRetDate();
+			List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
+			// 获取航班列表信息
+			findListbyPageNum(flightList, arg0, depDate, oneWayTables, dep, arr);
+			findListbyPageNum(retList, arg0, retDate, retTables, arr, dep);
+			if (flightList.size() == 0 || retList.size() == 0) {
+				result.setStatus(Constants.NO_RESULT);
+				result.setRet(true);
+				return result;
+			}
+			for (BaseFlightInfo out : retList) {
+				FlightDetail outDetail = out.getDetail();
+				double outprice = outDetail.getPrice();
+				for (BaseFlightInfo in : flightList) {
+					RoundTripFlightInfo round = new RoundTripFlightInfo();
+					FlightDetail detail = in.getDetail();
+					FlightDetail newDetail = new FlightDetail();
+					// 获取机票价格
+					double inprice = detail.getPrice();
+					double totalprice = inprice + outprice;
+					// 设置明细信息
+					newDetail.setPrice(new Double(String.format("%.2f",
+							totalprice)));// 票价
+					newDetail.setMonetaryunit(detail.getMonetaryunit());
+					newDetail.setArrcity(detail.getArrcity());
+					newDetail.setDepdate(detail.getDepdate());
+					newDetail.setDepcity(detail.getDepcity());
+					newDetail.setFlightno(detail.getFlightno());
+					newDetail.setWrapperid(detail.getWrapperid());
+					round.setDetail(newDetail);
+					round.setInfo(in.getInfo());
+					// 返程信息
+					round.setRetinfo(out.getInfo());
+					round.setRetdepdate(outDetail.getDepdate());
+					round.setRetflightno(outDetail.getFlightno());
+					roundTripFlightInfos.add(round);
 				}
 			}
+
 			result.setStatus(Constants.SUCCESS);
-			result.setData(flightList);
+			result.setData(roundTripFlightInfos);
 			result.setRet(true);
 		} catch (Exception e) {
 			result.setStatus(Constants.PARSING_FAIL);
@@ -526,138 +351,76 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 	 * 
 	 * @return
 	 */
-	public List<RoundTripFlightInfo> findListbyPageNum(
-			List<RoundTripFlightInfo> flightList, FlightSearchParam arg1,
-			Pattern pricePattern, String tables[], String dep, String arr)
+	public List<OneWayFlightInfo> findListbyPageNum(
+			List<OneWayFlightInfo> flightList, FlightSearchParam arg1,
+			String deptDate, String tables[], String dep, String arr)
 			throws Exception {
 		try {
-			String deptDate = arg1.getDepDate();
-			String retDate = arg1.getRetDate();
+			String[] serachArrDate = deptDate.split("-");
+			String depDateStr = serachArrDate[2] + "." + serachArrDate[1] + "."
+					+ serachArrDate[0];
 			for (int i = 1; i < tables.length; i++) {
-				// 单条航班完整信息
-				RoundTripFlightInfo roundTripFlightInfo = new RoundTripFlightInfo();
-				FlightDetail detail = new FlightDetail();
 				String trConent = tables[i];
-				trConent = trConent.replace("\n", "").replace("\r", "")
-						.replace("\t", "");
-				// 获取当前信息
-				String priceTable = StringUtils
-						.substringBetween(
-								trConent,
-								"<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">",
-								"</table>");
-				String price = "";
-				String tax = "";
-				String monetaryunit = StringUtils.substringBetween(priceTable,
-						"<td class=\"price\">", "<span");
-				Matcher priceMatcher = pricePattern.matcher(priceTable);
-				int num = 0;
-				while (priceMatcher.find()) {
-					if (num == 0)
-						price = priceMatcher.group();
-					if (num == 1) {
-						tax = priceMatcher.group();
+				// 飞行日期
+				String flyDate = StringUtils.substringBetween(trConent,
+						"<div class=\"DayRightDate\">", "</div>");
+				if (flyDate.contains(depDateStr)) {
+					// 航班完整信息
+					OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
+					FlightDetail detail = new FlightDetail();
+					// 航线信息
+					List<FlightSegement> info = new ArrayList<FlightSegement>();
+					// 航班号
+					List<String> fliNo = new ArrayList<String>();
+					// 飞行时间
+					String rightTime = StringUtils.substringBetween(trConent,
+							"<div class=\"DayRightTime\">", "</div>");
+					String times[] = rightTime.replace(" ", "").split("-");
+					String depTime = times[0];
+					String arrTime = times[1];
+					// 航班号
+					String flightNo = StringUtils.substringBetween(trConent,
+							"<div class=\"DayRightRute\">", "</div>");
+					String price = "";
+					String monetaryunit = "EUR";
+					String priceTable[] = StringUtils.substringsBetween(
+							trConent, "<div class=\"ShowFare\">", "</div>");
+					for (String string : priceTable) {
+						String priceStr = StringUtils.substringBetween(string,
+								"<span>", "</span>");
+						if (priceStr.contains("---")) {
+							continue;
+						}
+						price = priceStr;
 						break;
 					}
-					num++;
+					if (!StringUtils.isBlank(price)) {
+						FlightSegement flightSegement = new FlightSegement();
+						flightSegement.setFlightno(flightNo);
+						flightSegement.setDepairport(dep);
+						flightSegement.setArrairport(arr);
+						flightSegement.setDepDate(deptDate);
+						flightSegement.setArrDate(deptDate);
+						flightSegement.setDeptime(depTime);
+						flightSegement.setArrtime(arrTime);
+						fliNo.add(flightNo);
+						info.add(flightSegement);
+						detail.setMonetaryunit(monetaryunit);
+						detail.setPrice(new Double(price));
+						detail.setDepcity(dep);
+						detail.setArrcity(arr);
+						detail.setFlightno(fliNo);
+						detail.setDepdate(dateFormat.parse(deptDate));
+						detail.setWrapperid("gjsairsx001");
+						oneWayFlightInfo.setDetail(detail);
+						oneWayFlightInfo.setInfo(info);
+						flightList.add(oneWayFlightInfo);
+					}
 				}
-				String[] flihtml = StringUtils.substringsBetween(trConent,
-						"<table cellspacing=\"0\" cellpadding=\"0\"",
-						"</table>");
-				// 获取前往信息
-				String[] fliInfo = StringUtils.substringsBetween(flihtml[0],
-						"<tr class=\"back_lighter_2\">", "</tr>");
-				String[] returnFliInfo = StringUtils.substringsBetween(
-						flihtml[1], "<tr class=\"back_lighter_2\">", "</tr>");
-
-				// 获取往返信息
-				OneWayFlightInfo oneway = findFliInfo(returnFliInfo);
-				OneWayFlightInfo renway = findFliInfo(fliInfo);
-				// 航班详细信息
-				List<FlightSegement> info = oneway.getInfo();
-				List<FlightSegement> retinfo = renway.getInfo();
-				// 航班号
-				List<String> fliNo = oneway.getDetail().getFlightno();
-				List<String> retflightno = renway.getDetail().getFlightno();
-
-				detail.setMonetaryunit(monetaryunit);
-				detail.setPrice(new Double(price.replaceAll(",", "")));
-				detail.setDepcity(dep);
-				detail.setArrcity(arr);
-				detail.setTax(new Double(tax.replaceAll(",", "")));
-				detail.setFlightno(fliNo);
-				detail.setDepdate(dateFormat.parse(deptDate));
-				detail.setWrapperid("gjsweb00031");
-				roundTripFlightInfo.setDetail(detail);
-				roundTripFlightInfo.setInfo(info);
-				roundTripFlightInfo.setRetflightno(retflightno);
-				roundTripFlightInfo.setRetinfo(retinfo);
-				roundTripFlightInfo.setRetdepdate(dateFormat.parse(retDate));
-				flightList.add(roundTripFlightInfo);
 			}
-
 		} catch (Exception e) {
 			throw new Exception(e);
 		}
 		return flightList;
-	}
-
-	/**
-	 * 获取航班信息
-	 * 
-	 * @param data
-	 * @return
-	 */
-	public OneWayFlightInfo findFliInfo(String[] data) {
-		List<String> fliNo = new ArrayList<String>();
-		List<FlightSegement> info = new ArrayList<FlightSegement>();
-		OneWayFlightInfo base = new OneWayFlightInfo();
-		FlightDetail detail = new FlightDetail();
-		for (int n = 0; n < data.length; n++) {
-			FlightSegement flightSegement = new FlightSegement();
-			String flightNoHtml = StringUtils.substringBetween(data[n],
-					"<td style=\"width:8%;\">", "</td>");
-			String flightNo = StringUtils.substringBetween(flightNoHtml, ">",
-					"<").replaceAll("\\s", "");
-			String[] contents = StringUtils.substringsBetween(data[n],
-					"<td style=\"width:21%;\">", "</td>");
-			// 获取飞行数据
-			String depHtml = contents[0];
-			String arrirHtml = contents[1];
-			// 获取起飞数据
-			String depDataHtml = StringUtils.substringBefore(depHtml, "<");
-			String[] depData = depDataHtml.split("hrs,");
-			String[] depairports = StringUtils.substringsBetween(depHtml, "(",
-					")");
-			String datetime = depData[0].replaceAll("\\s", "");
-			String depDate = depData[1].replaceAll("\\s", "");
-			String depairport = depairports.length > 1 ? depairports[depairports.length - 1]
-					: depairports[0];
-			String arrDataHtml = StringUtils.substringBefore(arrirHtml, "<");
-			String[] arrData = arrDataHtml.split("hrs,");
-			String[] arrairports = StringUtils.substringsBetween(arrirHtml,
-					"(", ")");
-			String arrtime = arrData[0].replaceAll("\\s", "");
-			String arrdate = arrData[1].replaceAll("\\s", "");
-			String arrairport = arrairports.length > 1 ? arrairports[arrairports.length - 1]
-					: arrairports[0];
-			flightSegement.setFlightno(flightNo);
-			flightSegement.setDepairport(depairport.replaceAll("\\s", ""));
-			flightSegement.setArrairport(arrairport.replaceAll("\\s", ""));
-			String[] airdates = arrdate.split("/");
-			String[] depdates = depDate.split("/");
-			flightSegement.setArrDate(airdates[2] + "-" + airdates[1] + "-"
-					+ airdates[0]);
-			flightSegement.setDepDate(depdates[2] + "-" + depdates[1] + "-"
-					+ depdates[0]);
-			flightSegement.setDeptime(datetime);
-			flightSegement.setArrtime(arrtime);
-			fliNo.add(flightNo);
-			info.add(flightSegement);
-		}
-		detail.setFlightno(fliNo);
-		base.setInfo(info);
-		base.setDetail(detail);
-		return base;
 	}
 }

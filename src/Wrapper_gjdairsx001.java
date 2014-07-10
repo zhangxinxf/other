@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.httpclient.HttpStatus;
@@ -14,6 +13,7 @@ import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.lang.StringUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -53,13 +53,15 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 	public static void main(String[] args) {
 		//
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("CAG");
+		searchParam.setDep("MUC");
 		searchParam.setArr("BRN");
-		searchParam.setDepDate("2014-07-20");
+		searchParam.setDepDate("2014-07-19");
 		searchParam.setTimeOut("600000");
-		searchParam.setWrapperid("gjdweb00031");
+		searchParam.setWrapperid("gjdairsx001");
 		searchParam.setToken("");
-		new Wrapper_gjdairsx001().run(searchParam);
+//		BookingResult book=	new Wrapper_gjdairsx001().getBookingInfo(searchParam);
+//		System.out.println(JSON.toJSONString(book));
+//		new Wrapper_gjdairsx001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
@@ -102,60 +104,30 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 	public BookingResult getBookingInfo(FlightSearchParam arg0) {
 		BookingResult bookingResult = new BookingResult();
 		BookingInfo bookingInfo = new BookingInfo();
-		bookingInfo.setAction(postUrl);
-		bookingInfo.setMethod("post");
-		QFGetMethod get = null;
-		try {
-			String viewState = StringUtils.substringBetween("",
-					"id=\"__VIEWSTATE\" value=\"", "\"");
-			String perviouspage = StringUtils.substringBetween("",
-					"id=\"__PREVIOUSPAGE\" value=\"", "\"");
-			String[] dates = arg0.getDepDate().split("-");
-			Map<String, String> body = new LinkedHashMap<String, String>();
-			body.put("__EVENTTARGET", "");
-			body.put("__EVENTARGUMENT", "");
-			body.put("__LASTFOCUS", "");
-			body.put("__VIEWSTATE", viewState);
-			body.put("__PREVIOUSPAGE", perviouspage);
-			body.put(
-					"DisplayTopSubmenuMain1$DisplayLanguageSelector1$Dropdownlist_Languages",
-					"en-US");
-			body.put("QuickSearch_View$CitySelect_DepartCity$TextBox_CityCode",
-					arg0.getDep());
-			body.put("QuickSearch_View$CitySelect_ReturnCity$TextBox_CityCode",
-					arg0.getArr());
-			body.put("QuickSearch_View$RouteType", "Radio_oneway");
-			body.put(
-					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
-					dates[2]);
-			body.put(
-					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Month",
-					Integer.parseInt(dates[1]) + "");
-			body.put(
-					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Year",
-					dates[0]);
-			body.put(
-					"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
-					"ANY");
-			body.put("QuickSearch_View$Dropdownlist_SeatClass", "Economy");
-			body.put("QuickSearch_View$Radiobuttonlist_SearchType", "0");
-			body.put(
-					"QuickSearch_View$CarrierSelect_Carrier$TextBox_CarrierCode",
-					"");
-			body.put("QuickSearch_View$RadioButton_Sort", "0");
-			body.put("QuickSearch_View$Dropdownlist_Adult", "1");
-			body.put("QuickSearch_View$Dropdownlist_child", "0");
-			body.put("QuickSearch_View$Button_find", "Find");
-			body.put("QuickSearch_View$TextBox_AdvSearch", "False");
-			bookingInfo.setContentType("application/x-www-form-urlencoded");
-			bookingInfo.setInputs(body);
-			bookingResult.setData(bookingInfo);
-			bookingResult.setRet(true);
-		} catch (Exception e) {
-			bookingResult.setRet(false);
-		} finally {
-			get.releaseConnection();
-		}
+		bookingInfo.setAction("https://booking.flyskywork.com/default.aspx");
+		bookingInfo.setMethod("get");
+		String[] serachArrDate = arg0.getDepDate().split("-");
+		String dep = serachArrDate[2] + "." + serachArrDate[1] + "."
+				+ serachArrDate[0];
+		Map<String, String> map=new LinkedHashMap<String, String>();
+		map.put("oneway", "1");
+		map.put("ori", arg0.getDep());
+		map.put("des", arg0.getArr());
+		map.put("departure", dep);
+		map.put("dep", arg0.getDepDate());
+		map.put("return", "");
+		map.put("ret", "");
+		map.put("adt", "1");
+		map.put("chd", "0");
+		map.put("inf", "0");
+		map.put("currency", "EUR");
+		map.put("langculture", "en-us");
+		map.put("web", "swk");
+		map.put("submit", "");
+		map.put("pro", "");
+		bookingInfo.setInputs(map);
+		bookingResult.setRet(true);
+		bookingResult.setData(bookingInfo);
 		return bookingResult;
 	}
 
@@ -169,16 +141,16 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			// 指定协议名称和默认的端口号
-			Protocol myhttps = new Protocol("https",
-					new MySecureProtocolSocketFactory(), 443);
-			// 注册刚才创建的https 协议对象
-			Protocol.registerProtocol("https", myhttps);
+//			Protocol myhttps = new Protocol("https",
+//					new MySecureProtocolSocketFactory(), 443);
+//			// 注册刚才创建的https 协议对象
+//			Protocol.registerProtocol("https", myhttps);
 			// 设置时间参数
 			String[] serachArrDate = arg0.getDepDate().split("-");
 			String dep = serachArrDate[2] + "." + serachArrDate[1] + "."
 					+ serachArrDate[0];
 			String getUrl = String
-					.format("https://booking.flyskywork.com/default.aspx?oneway=1&ori=%s&des=%s&departure=%s&dep=%s&return=&ret=&adt=1&chd=0&inf=0&currency=EUR&langculture=de-de&web=swk&submit=&pro=",
+					.format("https://booking.flyskywork.com/default.aspx?oneway=1&ori=%s&des=%s&departure=%s&dep=%s&return=&ret=&adt=1&chd=0&inf=0&currency=EUR&langculture=en-us&web=swk&submit=&pro=",
 							arg0.getDep(), arg0.getArr(), dep,
 							arg0.getDepDate());
 			get = new QFGetMethod(firstUrl);
@@ -198,7 +170,17 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 					}
 				}
 			}
-			
+			if (null != options && options.length > 0) {
+				for (String option : options) {
+					if (option.contains(")")) {
+						String str = StringUtils.substringAfter(option, ">");
+						String values[] = str.split(" ");
+						data.put(values[0],
+								values[1].replace("(", "").replace(")", ""));
+					}
+				}
+			}
+
 			// 提交表单
 			get = new QFGetMethod(getUrl);
 			int getStatus = httpClient.executeMethod(get);
@@ -232,6 +214,7 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 			json.put("otherType", "");
 			json.put("strIpAddress", "");
 			json.put("strPromoCode", "");
+			json.put("langculture", "en-us");
 			post.setRequestEntity(new ByteArrayRequestEntity(json.toString()
 					.getBytes()));
 			int status = httpClient.executeMethod(post);
@@ -303,7 +286,12 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 			String arr = StringUtils.isBlank(data.get(arrKey)) ? arrKey : data
 					.get(arrKey);
 			// 获取航班列表信息
-			findListbyPageNum(flightList, arg0, pricePattern, tables, dep, arr);
+			findListbyPageNum(flightList, arg0, pricePattern, tables, depKey, arrKey);
+			if (flightList.size() == 0) {
+				result.setStatus(Constants.NO_RESULT);
+				result.setRet(true);
+				return result;
+			}
 			result.setStatus(Constants.SUCCESS);
 			result.setData(flightList);
 			result.setRet(true);
@@ -326,98 +314,67 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 			throws Exception {
 		try {
 			String deptDate = arg1.getDepDate();
+			String[] serachArrDate = deptDate.split("-");
+			String depDateStr = serachArrDate[2] + "." + serachArrDate[1] + "."
+					+ serachArrDate[0];
 			for (int i = 1; i < tables.length; i++) {
-				// 航线信息
-				List<FlightSegement> info = new ArrayList<FlightSegement>();
-				// 航班号
-				List<String> fliNo = new ArrayList<String>();
-				// 单条航班完整信息
-				OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
-				FlightDetail detail = new FlightDetail();
 				String trConent = tables[i];
-				trConent = trConent.replace("\n", "").replace("\r", "")
-						.replace("\t", "");
-				// 获取当前水
-				String priceTable = StringUtils
-						.substringBetween(
-								trConent,
-								"<table width=\"100%\" border=\"0\" cellpadding=\"0\" cellspacing=\"0\">",
-								"</table>");
-				String price = "";
-				String tax = "";
-				String monetaryunit = StringUtils.substringBetween(priceTable,
-						"<td class=\"price\">", "<span");
-				Matcher priceMatcher = pricePattern.matcher(priceTable);
-				int num = 0;
-				while (priceMatcher.find()) {
-					if (num == 0)
-						price = priceMatcher.group();
-					if (num == 1) {
-						tax = priceMatcher.group();
+				// 飞行日期
+				String flyDate = StringUtils.substringBetween(trConent,
+						"<div class=\"DayRightDate\">", "</div>");
+				if (flyDate.contains(depDateStr)) {
+					// 航班完整信息
+					OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
+					FlightDetail detail = new FlightDetail();
+					// 航线信息
+					List<FlightSegement> info = new ArrayList<FlightSegement>();
+					// 航班号
+					List<String> fliNo = new ArrayList<String>();
+					// 飞行时间
+					String rightTime = StringUtils.substringBetween(trConent,
+							"<div class=\"DayRightTime\">", "</div>");
+					String times[] = rightTime.replace(" ", "").split("-");
+					String depTime = times[0];
+					String arrTime = times[1];
+					// 航班号
+					String flightNo = StringUtils.substringBetween(trConent,
+							"<div class=\"DayRightRute\">", "</div>");
+					String price = "";
+					String monetaryunit = "EUR";
+					String priceTable[] = StringUtils.substringsBetween(
+							trConent, "<div class=\"ShowFare\">", "</div>");
+					for (String string : priceTable) {
+						String priceStr = StringUtils.substringBetween(string,
+								"<span>", "</span>");
+						if (priceStr.contains("---")) {
+							continue;
+						}
+						price = priceStr;
 						break;
 					}
-					num++;
+					if (!StringUtils.isBlank(price)) {
+						FlightSegement flightSegement = new FlightSegement();
+						flightSegement.setFlightno(flightNo);
+						flightSegement.setDepairport(arg1.getDep());
+						flightSegement.setArrairport(arg1.getArr());
+						flightSegement.setDepDate(arg1.getDepDate());
+						flightSegement.setArrDate(arg1.getDepDate());
+						flightSegement.setDeptime(depTime);
+						flightSegement.setArrtime(arrTime);
+						fliNo.add(flightNo);
+						info.add(flightSegement);
+						detail.setMonetaryunit(monetaryunit);
+						detail.setPrice(new Double(price));
+						detail.setDepcity(dep);
+						detail.setArrcity(arr);
+						detail.setFlightno(fliNo);
+						detail.setDepdate(dateFormat.parse(deptDate));
+						detail.setWrapperid("gjdairsx001");
+						oneWayFlightInfo.setDetail(detail);
+						oneWayFlightInfo.setInfo(info);
+						flightList.add(oneWayFlightInfo);
+					}
 				}
-				// 获取航班信息
-				String[] fliInfo = StringUtils.substringsBetween(trConent,
-						"<tr class=\"back_lighter_2\">", "</tr>");
-				for (int n = 0; n < fliInfo.length - 1; n++) {
-					FlightSegement flightSegement = new FlightSegement();
-					String flightNoHtml = StringUtils.substringBetween(
-							fliInfo[n], "<td style=\"width:8%;\">", "</td>");
-					String flightNo = StringUtils.substringBetween(
-							flightNoHtml, ">", "<").replaceAll("\\s", "");
-					String[] contents = StringUtils.substringsBetween(
-							fliInfo[n], "<td style=\"width:21%;\">", "</td>");
-					// 获取飞行数据
-					String depHtml = contents[0];
-					String arrirHtml = contents[1];
-					// 获取起飞数据
-					String depDataHtml = StringUtils.substringBefore(depHtml,
-							"<");
-					String[] depData = depDataHtml.split("hrs,");
-					String[] depairports = StringUtils.substringsBetween(
-							depHtml, "(", ")");
-					String datetime = depData[0].replaceAll("\\s", "");
-					String depDate = depData[1].replaceAll("\\s", "");
-					String depairport = depairports.length > 1 ? depairports[depairports.length - 1]
-							: depairports[0];
-					String arrDataHtml = StringUtils.substringBefore(arrirHtml,
-							"<");
-					String[] arrData = arrDataHtml.split("hrs,");
-					String[] arrairports = StringUtils.substringsBetween(
-							arrirHtml, "(", ")");
-					String arrtime = arrData[0].replaceAll("\\s", "");
-					String arrdate = arrData[1].replaceAll("\\s", "");
-					String arrairport = arrairports.length > 1 ? arrairports[arrairports.length - 1]
-							: arrairports[0];
-					flightSegement.setFlightno(flightNo);
-					flightSegement.setDepairport(depairport.replaceAll("\\s",
-							""));
-					flightSegement.setArrairport(arrairport.replaceAll("\\s",
-							""));
-					String[] airdates = arrdate.split("/");
-					String[] depdates = depDate.split("/");
-					flightSegement.setArrDate(airdates[2] + "-" + airdates[1]
-							+ "-" + airdates[0]);
-					flightSegement.setDepDate(depdates[2] + "-" + depdates[1]
-							+ "-" + depdates[0]);
-					flightSegement.setDeptime(datetime);
-					flightSegement.setArrtime(arrtime);
-					fliNo.add(flightNo);
-					info.add(flightSegement);
-				}
-				detail.setMonetaryunit(monetaryunit);
-				detail.setPrice(new Double(price.replaceAll(",", "")));
-				detail.setDepcity(dep);
-				detail.setArrcity(arr);
-				detail.setTax(new Double(tax.replaceAll(",", "")));
-				detail.setFlightno(fliNo);
-				detail.setDepdate(dateFormat.parse(deptDate));
-				detail.setWrapperid("gjdweb00031");
-				oneWayFlightInfo.setDetail(detail);
-				oneWayFlightInfo.setInfo(info);
-				flightList.add(oneWayFlightInfo);
 			}
 		} catch (Exception e) {
 			throw new Exception(e);
