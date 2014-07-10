@@ -55,7 +55,7 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 		FlightSearchParam searchParam = new FlightSearchParam();
 		searchParam.setDep("MUC");
 		searchParam.setArr("BRN");
-		searchParam.setDepDate("2014-07-19");
+		searchParam.setDepDate("2014-07-20");
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdairsx001");
 		searchParam.setToken("");
@@ -334,8 +334,8 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 					String rightTime = StringUtils.substringBetween(trConent,
 							"<div class=\"DayRightTime\">", "</div>");
 					String times[] = rightTime.replace(" ", "").split("-");
-					String depTime = times[0];
-					String arrTime = times[1];
+					String depTime = times[0].replace("\u00A0","");
+					String arrTime = times[1].replace("\u00A0","");
 					// 航班号
 					String flightNo = StringUtils.substringBetween(trConent,
 							"<div class=\"DayRightRute\">", "</div>");

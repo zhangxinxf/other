@@ -278,10 +278,10 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 			}
 			String depKey = arg0.getDep();
 			String arrKey = arg0.getArr();
-			String dep = StringUtils.isBlank(data.get(depKey)) ? depKey : data
-					.get(depKey);
-			String arr = StringUtils.isBlank(data.get(arrKey)) ? arrKey : data
-					.get(arrKey);
+//			String dep = StringUtils.isBlank(data.get(depKey)) ? depKey : data
+//					.get(depKey);
+//			String arr = StringUtils.isBlank(data.get(arrKey)) ? arrKey : data
+//					.get(arrKey);
 
 			// 截取字符串
 			String retTable = StringUtils.substringBetween(html,
@@ -299,8 +299,8 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 			String retDate = arg0.getRetDate();
 			List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
 			// 获取航班列表信息
-			findListbyPageNum(flightList, arg0, depDate, oneWayTables, dep, arr);
-			findListbyPageNum(retList, arg0, retDate, retTables, arr, dep);
+			findListbyPageNum(flightList, arg0, depDate, oneWayTables, depKey, arrKey);
+			findListbyPageNum(retList, arg0, retDate, retTables, arrKey, depKey);
 			if (flightList.size() == 0 || retList.size() == 0) {
 				result.setStatus(Constants.NO_RESULT);
 				result.setRet(true);
@@ -376,8 +376,8 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 					String rightTime = StringUtils.substringBetween(trConent,
 							"<div class=\"DayRightTime\">", "</div>");
 					String times[] = rightTime.replace(" ", "").split("-");
-					String depTime = times[0];
-					String arrTime = times[1];
+					String depTime = times[0].replace("\u00A0","");
+					String arrTime = times[1].replace("\u00A0","");
 					// 航班号
 					String flightNo = StringUtils.substringBetween(trConent,
 							"<div class=\"DayRightRute\">", "</div>");
