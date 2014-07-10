@@ -153,33 +153,33 @@ public class Wrapper_gjsairsx001 implements QunarCrawler {
 					.format("https://booking.flyskywork.com/default.aspx?ori=%s&des=%s&departure=%s&dep=%s&return=%s&ret=%s&adt=1&chd=0&inf=0&currency=EUR&langculture=en-us&web=swk&submit=",
 							arg0.getDep(), arg0.getArr(), dep,
 							arg0.getDepDate(), ret, arg0.getRetDate());
-			get = new QFGetMethod(firstUrl);
-			int cityStauts = httpClient.executeMethod(get);
-			if (cityStauts != HttpStatus.SC_OK) {
-				return EXCEPTION_INFO;
-			}
-			String cityStr=get.getResponseBodyAsString();
-			String selects=StringUtils.substringBetween(cityStr,"<dd id=\"des-element\">","</dd>");
-			String options[]=StringUtils.substringsBetween(selects, " <option", "</option>");
-			if(null!=options&&options.length>0){
-				for (String option : options) {
-					if(option.contains(")")){
-					String  str=StringUtils.substringAfter(option,">");
-					String values[]=str.split(" ");
-					data.put(values[0], values[1].replace("(", "").replace(")", ""));
-					}
-				}
-			}
-			if (null != options && options.length > 0) {
-				for (String option : options) {
-					if (option.contains(")")) {
-						String str = StringUtils.substringAfter(option, ">");
-						String values[] = str.split(" ");
-						data.put(values[0],
-								values[1].replace("(", "").replace(")", ""));
-					}
-				}
-			}
+//			get = new QFGetMethod(firstUrl);
+//			int cityStauts = httpClient.executeMethod(get);
+//			if (cityStauts != HttpStatus.SC_OK) {
+//				return EXCEPTION_INFO;
+//			}
+//			String cityStr=get.getResponseBodyAsString();
+//			String selects=StringUtils.substringBetween(cityStr,"<dd id=\"des-element\">","</dd>");
+//			String options[]=StringUtils.substringsBetween(selects, " <option", "</option>");
+//			if(null!=options&&options.length>0){
+//				for (String option : options) {
+//					if(option.contains(")")){
+//					String  str=StringUtils.substringAfter(option,">");
+//					String values[]=str.split(" ");
+//					data.put(values[0], values[1].replace("(", "").replace(")", ""));
+//					}
+//				}
+//			}
+//			if (null != options && options.length > 0) {
+//				for (String option : options) {
+//					if (option.contains(")")) {
+//						String str = StringUtils.substringAfter(option, ">");
+//						String values[] = str.split(" ");
+//						data.put(values[0],
+//								values[1].replace("(", "").replace(")", ""));
+//					}
+//				}
+//			}
 
 			// 提交表单
 			get = new QFGetMethod(getUrl);

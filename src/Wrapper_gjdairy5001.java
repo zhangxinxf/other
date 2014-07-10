@@ -1,19 +1,20 @@
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.naming.NameParser;
+
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.cookie.CookiePolicy;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.lang.StringUtils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -36,15 +37,13 @@ import com.qunar.qfwrapper.util.QFPostMethod;
  * @author zhangx
  * 
  */
-public class Wrapper_gjdairsx001 implements QunarCrawler {
+public class Wrapper_gjdairy5001 implements QunarCrawler {
 
 	private static final String EXCEPTION_INFO = "excetpion";
 
 	// 表单提交界面
-	private static final String postUrl = "https://booking.flyskywork.com/WebService/B2cService.asmx/GetAvailability";
-	// 首页，获取城市三字码
-	private static final String firstUrl = "http://flyskywork.com/en";
-	private static Map<String, String> data = new HashMap<String, String>();
+	private static final String postUrl = "https://golden.crane.aero/Common/MemberRezvResults.jsp";
+
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd");
 
@@ -53,15 +52,16 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 	public static void main(String[] args) {
 		//
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("MUC");
-		searchParam.setArr("BRN");
-		searchParam.setDepDate("2014-07-20");
+		searchParam.setDep("BMO");
+		searchParam.setArr("MDL");
+		searchParam.setDepDate("2014-08-19");
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdairsx001");
 		searchParam.setToken("");
-//		BookingResult book=	new Wrapper_gjdairsx001().getBookingInfo(searchParam);
-//		System.out.println(JSON.toJSONString(book));
-//		new Wrapper_gjdairsx001().run(searchParam);
+		// BookingResult book= new
+		// Wrapper_gjdairsx001().getBookingInfo(searchParam);
+		// System.out.println(JSON.toJSONString(book));
+		 new Wrapper_gjdairy5001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
@@ -109,7 +109,7 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 		String[] serachArrDate = arg0.getDepDate().split("-");
 		String dep = serachArrDate[2] + "." + serachArrDate[1] + "."
 				+ serachArrDate[0];
-		Map<String, String> map=new LinkedHashMap<String, String>();
+		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("oneway", "1");
 		map.put("ori", arg0.getDep());
 		map.put("des", arg0.getArr());
@@ -141,82 +141,28 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			// 指定协议名称和默认的端口号
-//			Protocol myhttps = new Protocol("https",
-//					new MySecureProtocolSocketFactory(), 443);
-//			// 注册刚才创建的https 协议对象
-//			Protocol.registerProtocol("https", myhttps);
-			// 设置时间参数
+			Protocol myhttps = new Protocol("https",
+					new MySecureProtocolSocketFactory(), 443);
+			// 注册刚才创建的https 协议对象
+			Protocol.registerProtocol("https", myhttps);
 			String[] serachArrDate = arg0.getDepDate().split("-");
-			String dep = serachArrDate[2] + "." + serachArrDate[1] + "."
+			String dep = serachArrDate[2] + "/" + serachArrDate[1] + "/"
 					+ serachArrDate[0];
-			String getUrl = String
-					.format("https://booking.flyskywork.com/default.aspx?oneway=1&ori=%s&des=%s&departure=%s&dep=%s&return=&ret=&adt=1&chd=0&inf=0&currency=EUR&langculture=en-us&web=swk&submit=&pro=",
-							arg0.getDep(), arg0.getArr(), dep,
-							arg0.getDepDate());
-//			get = new QFGetMethod(firstUrl);
-//			int cityStauts = httpClient.executeMethod(get);
-//			if (cityStauts != HttpStatus.SC_OK) {
-//				return EXCEPTION_INFO;
-//			}
-//			String cityStr=get.getResponseBodyAsString();
-//			String selects=StringUtils.substringBetween(cityStr,"<dd id=\"des-element\">","</dd>");
-//			String options[]=StringUtils.substringsBetween(selects, " <option", "</option>");
-//			if(null!=options&&options.length>0){
-//				for (String option : options) {
-//					if(option.contains(")")){
-//					String  str=StringUtils.substringAfter(option,">");
-//					String values[]=str.split(" ");
-//					data.put(values[0], values[1].replace("(", "").replace(")", ""));
-//					}
-//				}
-//			}
-//			if (null != options && options.length > 0) {
-//				for (String option : options) {
-//					if (option.contains(")")) {
-//						String str = StringUtils.substringAfter(option, ">");
-//						String values[] = str.split(" ");
-//						data.put(values[0],
-//								values[1].replace("(", "").replace(")", ""));
-//					}
-//				}
-//			}
-
 			// 提交表单
-			get = new QFGetMethod(getUrl);
-			int getStatus = httpClient.executeMethod(get);
-			if (getStatus != HttpStatus.SC_OK) {
-				return EXCEPTION_INFO;
-			}
 			post = new QFPostMethod(postUrl);
-			String cookie = StringUtils.join(
-					httpClient.getState().getCookies(), ";");
-			post.setRequestHeader("Cookie", cookie);
-			post.setRequestHeader("Referer", getUrl);
-			post.setRequestHeader("Origin", " https://booking.flyskywork.com");
-			post.setRequestHeader("Content-Type",
-					"application/json; charset=UTF-8");
-			JSONObject json = new JSONObject();
-			json.put("BoardingClass", "");
-			json.put("CurrencyCode", "EUR");
-			json.put("SearchType", "FARE");
-			json.put("dateFrom", serachArrDate[0] + serachArrDate[1]
-					+ serachArrDate[2]);
-			json.put("dateTo", serachArrDate[0] + serachArrDate[1]
-					+ serachArrDate[2]);
-			json.put("destination", arg0.getArr());
-			json.put("iAdult", "1");
-			json.put("iChild", "0");
-			json.put("iFlightOnly", "0");
-			json.put("iInfant", "0");
-			json.put("iOneWay", "true");
-			json.put("iOther", "0");
-			json.put("origin", arg0.getDep());
-			json.put("otherType", "");
-			json.put("strIpAddress", "");
-			json.put("strPromoCode", "");
-			json.put("langculture", "en-us");
-			post.setRequestEntity(new ByteArrayRequestEntity(json.toString()
-					.getBytes()));
+			NameValuePair[] parametersBody = new NameValuePair[] {
+			new NameValuePair("clickedButton", "btnSearch"),
+			new NameValuePair("TRIPTYPE", "O"),
+			new NameValuePair("DEPPORT", arg0.getDep()),
+			new NameValuePair("ARRPORT", arg0.getArr()),
+			new NameValuePair("DEPDATE", dep),
+			new NameValuePair("RETDATE", ""),
+			new NameValuePair("ADULT", "1"),
+			new NameValuePair("CHILD", "0"),
+			new NameValuePair("INFANT", "0"),
+			new NameValuePair("DOMESTIC_CURR","USD")
+			};
+			post.setRequestBody(parametersBody);
 			int status = httpClient.executeMethod(post);
 			if (status != HttpStatus.SC_OK) {
 				return EXCEPTION_INFO;
@@ -281,12 +227,9 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 			}
 			String depKey = arg0.getDep();
 			String arrKey = arg0.getArr();
-			String dep = StringUtils.isBlank(data.get(depKey)) ? depKey : data
-					.get(depKey);
-			String arr = StringUtils.isBlank(data.get(arrKey)) ? arrKey : data
-					.get(arrKey);
 			// 获取航班列表信息
-			findListbyPageNum(flightList, arg0, pricePattern, tables, depKey, arrKey);
+			findListbyPageNum(flightList, arg0, pricePattern, tables, depKey,
+					arrKey);
 			if (flightList.size() == 0) {
 				result.setStatus(Constants.NO_RESULT);
 				result.setRet(true);
@@ -334,8 +277,8 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 					String rightTime = StringUtils.substringBetween(trConent,
 							"<div class=\"DayRightTime\">", "</div>");
 					String times[] = rightTime.replace(" ", "").split("-");
-					String depTime = times[0].replace("\u00A0","");
-					String arrTime = times[1].replace("\u00A0","");
+					String depTime = times[0].replace("\u00A0", "");
+					String arrTime = times[1].replace("\u00A0", "");
 					// 航班号
 					String flightNo = StringUtils.substringBetween(trConent,
 							"<div class=\"DayRightRute\">", "</div>");
@@ -369,7 +312,7 @@ public class Wrapper_gjdairsx001 implements QunarCrawler {
 						detail.setArrcity(arr);
 						detail.setFlightno(fliNo);
 						detail.setDepdate(dateFormat.parse(deptDate));
-						detail.setWrapperid("gjdairsx001");
+						detail.setWrapperid("gjdairy5001");
 						oneWayFlightInfo.setDetail(detail);
 						oneWayFlightInfo.setInfo(info);
 						flightList.add(oneWayFlightInfo);
