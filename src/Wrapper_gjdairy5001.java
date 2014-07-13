@@ -54,14 +54,14 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 		FlightSearchParam searchParam = new FlightSearchParam();
 		searchParam.setDep("BMO");
 		searchParam.setArr("MDL");
-		searchParam.setDepDate("2014-08-19");
+		searchParam.setDepDate("2014-08-18");
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdairsx001");
 		searchParam.setToken("");
 		// BookingResult book= new
 		// Wrapper_gjdairsx001().getBookingInfo(searchParam);
 		// System.out.println(JSON.toJSONString(book));
-		 new Wrapper_gjdairy5001().run(searchParam);
+		new Wrapper_gjdairy5001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
@@ -151,17 +151,16 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 			// 提交表单
 			post = new QFPostMethod(postUrl);
 			NameValuePair[] parametersBody = new NameValuePair[] {
-			new NameValuePair("clickedButton", "btnSearch"),
-			new NameValuePair("TRIPTYPE", "O"),
-			new NameValuePair("DEPPORT", arg0.getDep()),
-			new NameValuePair("ARRPORT", arg0.getArr()),
-			new NameValuePair("DEPDATE", dep),
-			new NameValuePair("RETDATE", ""),
-			new NameValuePair("ADULT", "1"),
-			new NameValuePair("CHILD", "0"),
-			new NameValuePair("INFANT", "0"),
-			new NameValuePair("DOMESTIC_CURR","USD")
-			};
+					new NameValuePair("clickedButton", "btnSearch"),
+					new NameValuePair("TRIPTYPE", "O"),
+					new NameValuePair("DEPPORT", arg0.getDep()),
+					new NameValuePair("ARRPORT", arg0.getArr()),
+					new NameValuePair("DEPDATE", dep),
+					new NameValuePair("RETDATE", ""),
+					new NameValuePair("ADULT", "1"),
+					new NameValuePair("CHILD", "0"),
+					new NameValuePair("INFANT", "0"),
+					new NameValuePair("DOMESTIC_CURR", "USD") };
 			post.setRequestBody(parametersBody);
 			int status = httpClient.executeMethod(post);
 			if (status != HttpStatus.SC_OK) {
@@ -210,26 +209,17 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 				.replace("\\n", "").replace("\\r", "").replace("\\t", "")
 				.replace("\\", "").replace("//", "");
 		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
-		String priceReg = "(\\d)+,?\\d+(\\.){1}\\d+";
-		Pattern pricePattern = Pattern.compile(priceReg);
 		try {
-			// 截取字符串
-			String table = StringUtils.substringBetween(html,
-					"<table id=\"tb_Outward\" class=\"SelectFlight\">",
-					"</table>");
-			// 第一个table和最后一个table是分页信息
-			String tables[] = StringUtils.substringsBetween(table, "<tr class",
-					"</tr>");
-			if (tables.length <= 1) {
+			// 获取input信息
+			String tables[] = StringUtils.substringsBetween(html,
+					"<input style=\"cursor:pointer;\"type=\"radio\"", ">");
+			if (tables.length < 1) {
 				result.setRet(true);
 				result.setStatus(Constants.NO_RESULT);
 				return result;
 			}
-			String depKey = arg0.getDep();
-			String arrKey = arg0.getArr();
 			// 获取航班列表信息
-			findListbyPageNum(flightList, arg0, pricePattern, tables, depKey,
-					arrKey);
+			findListbyPageNum(flightList, arg0, tables);
 			if (flightList.size() == 0) {
 				result.setStatus(Constants.NO_RESULT);
 				result.setRet(true);
@@ -253,71 +243,56 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 	 */
 	public List<OneWayFlightInfo> findListbyPageNum(
 			List<OneWayFlightInfo> flightList, FlightSearchParam arg1,
-			Pattern pricePattern, String tables[], String dep, String arr)
-			throws Exception {
+			String tables[]) throws Exception {
 		try {
 			String deptDate = arg1.getDepDate();
-			String[] serachArrDate = deptDate.split("-");
-			String depDateStr = serachArrDate[2] + "." + serachArrDate[1] + "."
-					+ serachArrDate[0];
 			for (int i = 1; i < tables.length; i++) {
+				// 航班完整信息
+				OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
+				FlightDetail detail = new FlightDetail();
+				// 航线信息
+				List<FlightSegement> info = new ArrayList<FlightSegement>();
+				// 航班号
+				List<String> fliNo = new ArrayList<String>();
 				String trConent = tables[i];
-				// 飞行日期
-				String flyDate = StringUtils.substringBetween(trConent,
-						"<div class=\"DayRightDate\">", "</div>");
-				if (flyDate.contains(depDateStr)) {
-					// 航班完整信息
-					OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
-					FlightDetail detail = new FlightDetail();
-					// 航线信息
-					List<FlightSegement> info = new ArrayList<FlightSegement>();
-					// 航班号
-					List<String> fliNo = new ArrayList<String>();
-					// 飞行时间
-					String rightTime = StringUtils.substringBetween(trConent,
-							"<div class=\"DayRightTime\">", "</div>");
-					String times[] = rightTime.replace(" ", "").split("-");
-					String depTime = times[0].replace("\u00A0", "");
-					String arrTime = times[1].replace("\u00A0", "");
-					// 航班号
-					String flightNo = StringUtils.substringBetween(trConent,
-							"<div class=\"DayRightRute\">", "</div>");
-					String price = "";
-					String monetaryunit = "EUR";
-					String priceTable[] = StringUtils.substringsBetween(
-							trConent, "<div class=\"ShowFare\">", "</div>");
-					for (String string : priceTable) {
-						String priceStr = StringUtils.substringBetween(string,
-								"<span>", "</span>");
-						if (priceStr.contains("---")) {
-							continue;
-						}
-						price = priceStr;
-						break;
-					}
-					if (!StringUtils.isBlank(price)) {
-						FlightSegement flightSegement = new FlightSegement();
-						flightSegement.setFlightno(flightNo);
-						flightSegement.setDepairport(arg1.getDep());
-						flightSegement.setArrairport(arg1.getArr());
-						flightSegement.setDepDate(arg1.getDepDate());
-						flightSegement.setArrDate(arg1.getDepDate());
-						flightSegement.setDeptime(depTime);
-						flightSegement.setArrtime(arrTime);
-						fliNo.add(flightNo);
-						info.add(flightSegement);
-						detail.setMonetaryunit(monetaryunit);
-						detail.setPrice(new Double(price));
-						detail.setDepcity(dep);
-						detail.setArrcity(arr);
-						detail.setFlightno(fliNo);
-						detail.setDepdate(dateFormat.parse(deptDate));
-						detail.setWrapperid("gjdairy5001");
-						oneWayFlightInfo.setDetail(detail);
-						oneWayFlightInfo.setInfo(info);
-						flightList.add(oneWayFlightInfo);
-					}
-				}
+				String inputText = StringUtils.substringBetween(trConent,
+						"flightInfo(", ")");
+				inputText = inputText.replace("'", "");
+				String[] values = inputText.split(",");
+				// 航班号
+				String flightNo = values[0];
+				// 起飞日期
+				String depDateStr = values[3];
+				
+				String arrDateStr = values[6];
+				String depTime = values[4];
+				String arrTime = values[7];
+				String dep = values[11];
+				String arr = values[13];
+				String price = "";
+				String[] depDate=depDateStr.split(".");
+				String[] arrDate=arrDateStr.split(".");
+				String monetaryunit = "USD";
+				FlightSegement flightSegement = new FlightSegement();
+				flightSegement.setFlightno(flightNo);
+				flightSegement.setDepairport(dep);
+				flightSegement.setArrairport(arr);
+				flightSegement.setDepDate(depDate[2]+"-"+depDate[1]+"-"+depDate[0]);
+				flightSegement.setArrDate(arrDate[2]+"-"+arrDate[1]+"-"+arrDate[0]);
+				flightSegement.setDeptime(depTime);
+				flightSegement.setArrtime(arrTime);
+				fliNo.add(flightNo);
+				info.add(flightSegement);
+				detail.setMonetaryunit(monetaryunit);
+				detail.setPrice(new Double(price));
+				detail.setDepcity(arg1.getDep());
+				detail.setArrcity(arg1.getArr());
+				detail.setFlightno(fliNo);
+				detail.setDepdate(dateFormat.parse(deptDate));
+				detail.setWrapperid("gjdairy5001");
+				oneWayFlightInfo.setDetail(detail);
+				oneWayFlightInfo.setInfo(info);
+				flightList.add(oneWayFlightInfo);
 			}
 		} catch (Exception e) {
 			throw new Exception(e);
