@@ -130,10 +130,10 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			// 指定协议名称和默认的端口号
-			Protocol myhttps = new Protocol("https",
-					new MySecureProtocolSocketFactory(), 443);
-			// 注册刚才创建的https 协议对象
-			Protocol.registerProtocol("https", myhttps);
+//			Protocol myhttps = new Protocol("https",
+//					new MySecureProtocolSocketFactory(), 443);
+//			// 注册刚才创建的https 协议对象
+//			Protocol.registerProtocol("https", myhttps);
 			String[] serachArrDate = arg0.getDepDate().split("-");
 			String dep = serachArrDate[2] + "/" + serachArrDate[1] + "/"
 					+ serachArrDate[0];

@@ -56,10 +56,10 @@ public class Wrapper_gjsairy5001 implements QunarCrawler {
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdairsx001");
 		searchParam.setToken("");
-//		BookingResult book = new Wrapper_gjsairy5001()
-//				.getBookingInfo(searchParam);
-//		System.out.println(JSON.toJSONString(book));
-		 new Wrapper_gjsairy5001().run(searchParam);
+		// BookingResult book = new Wrapper_gjsairy5001()
+		// .getBookingInfo(searchParam);
+		// System.out.println(JSON.toJSONString(book));
+		new Wrapper_gjsairy5001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
@@ -137,10 +137,10 @@ public class Wrapper_gjsairy5001 implements QunarCrawler {
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			// 指定协议名称和默认的端口号
-			Protocol myhttps = new Protocol("https",
-					new MySecureProtocolSocketFactory(), 443);
-			// 注册刚才创建的https 协议对象
-			Protocol.registerProtocol("https", myhttps);
+			// Protocol myhttps = new Protocol("https",
+			// new MySecureProtocolSocketFactory(), 443);
+			// // 注册刚才创建的https 协议对象
+			// Protocol.registerProtocol("https", myhttps);
 			String[] depDate = arg0.getDepDate().split("-");
 			String[] retDate = arg0.getRetDate().split("-");
 			String dep = depDate[2] + "/" + depDate[1] + "/" + depDate[0];
