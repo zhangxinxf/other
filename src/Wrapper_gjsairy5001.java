@@ -16,11 +16,13 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.qunar.qfwrapper.bean.booking.BookingInfo;
 import com.qunar.qfwrapper.bean.booking.BookingResult;
+import com.qunar.qfwrapper.bean.search.BaseFlightInfo;
 import com.qunar.qfwrapper.bean.search.FlightDetail;
 import com.qunar.qfwrapper.bean.search.FlightSearchParam;
 import com.qunar.qfwrapper.bean.search.FlightSegement;
 import com.qunar.qfwrapper.bean.search.OneWayFlightInfo;
 import com.qunar.qfwrapper.bean.search.ProcessResultInfo;
+import com.qunar.qfwrapper.bean.search.RoundTripFlightInfo;
 import com.qunar.qfwrapper.constants.Constants;
 import com.qunar.qfwrapper.interfaces.QunarCrawler;
 import com.qunar.qfwrapper.util.QFGetMethod;
@@ -30,13 +32,13 @@ import com.qunar.qfwrapper.util.QFPostMethod;
 /**
  * Golden Myanmar Airlines航空单程
  * 
+ * @author zhangx
  * 
  */
-public class Wrapper_gjdairy5001 implements QunarCrawler {
+public class Wrapper_gjsairy5001 implements QunarCrawler {
 
 	private static final String EXCEPTION_INFO = "excetpion";
 
-	// 表单提交界面
 	private static final String postUrl = "https://golden.crane.aero/Common/MemberRezvResults.jsp";
 
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat(
@@ -47,16 +49,17 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 	public static void main(String[] args) {
 		//
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("MYT");
-		searchParam.setArr("SIN");
-		searchParam.setDepDate("2014-09-01");
+		searchParam.setDep("SIN");
+		searchParam.setArr("RGN");
+		searchParam.setDepDate("2014-07-25");
+		searchParam.setRetDate("2014-08-18");
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdairsx001");
 		searchParam.setToken("");
-//		 BookingResult book= new
-//		 Wrapper_gjdairy5001().getBookingInfo(searchParam);
-//		 System.out.println(JSON.toJSONString(book));
-		new Wrapper_gjdairy5001().run(searchParam);
+//		BookingResult book = new Wrapper_gjsairy5001()
+//				.getBookingInfo(searchParam);
+//		System.out.println(JSON.toJSONString(book));
+		 new Wrapper_gjsairy5001().run(searchParam);
 	}
 
 	public void run(FlightSearchParam searchParam) {
@@ -70,7 +73,8 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 			// } else {
 			// html = Files.toString(f, Charsets.UTF_8);
 			// }
-			html = Files.toString(f, Charsets.UTF_8);
+
+			html = getHtml(searchParam);
 			html = html.replace("\\u003c", "<").replace("\\u003e", ">")
 					.replace("\\n", "").replace("\\r", "").replace("\\t", "")
 					.replace("\\", "").replace("//", "");
@@ -78,14 +82,16 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 			ProcessResultInfo result = new ProcessResultInfo();
 			result = process(html, searchParam);
 			if (result.isRet() && result.getStatus().equals(Constants.SUCCESS)) {
-				List<OneWayFlightInfo> flightList = (List<OneWayFlightInfo>) result
+				List<RoundTripFlightInfo> flightList = (List<RoundTripFlightInfo>) result
 						.getData();
 				System.out.println("总量" + flightList.size());
-				for (OneWayFlightInfo in : flightList) {
-					System.out
-							.println("************" + in.getInfo().toString());
-					System.out.println("++++++++++++"
-							+ in.getDetail().toString());
+				for (int i = 0; i < flightList.size(); i++) {
+					RoundTripFlightInfo in = flightList.get(i);
+					System.out.println("returnInfo"
+							+ in.getRetinfo().toString());
+					System.out.println("OWDetail:" + in.getDetail());
+					System.out.println("OWINFo:" + in.getInfo());
+					System.err.println("*****************************");
 				}
 			} else {
 				System.out.println(result.getStatus());
@@ -100,16 +106,17 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 		BookingInfo bookingInfo = new BookingInfo();
 		bookingInfo.setAction(postUrl);
 		bookingInfo.setMethod("post");
-		String[] serachArrDate = arg0.getDepDate().split("-");
-		String dep = serachArrDate[2] + "." + serachArrDate[1] + "."
-				+ serachArrDate[0];
+		String[] depDate = arg0.getDepDate().split("-");
+		String[] retDate = arg0.getRetDate().split("-");
+		String dep = depDate[2] + "/" + depDate[1] + "/" + depDate[0];
+		String ret = retDate[2] + "/" + retDate[1] + "/" + retDate[0];
 		Map<String, String> map = new LinkedHashMap<String, String>();
 		map.put("clickedButton", "btnSearch");
-		map.put("TRIPTYPE", "O");
+		map.put("TRIPTYPE", "R");
 		map.put("DEPPORT", arg0.getDep());
 		map.put("ARRPORT", arg0.getArr());
 		map.put("DEPDATE", dep);
-		map.put("RETDATE", "");
+		map.put("RETDATE", ret);
 		map.put("ADULT", "1");
 		map.put("CHILD", "0");
 		map.put("INFANT", "0");
@@ -134,18 +141,19 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 					new MySecureProtocolSocketFactory(), 443);
 			// 注册刚才创建的https 协议对象
 			Protocol.registerProtocol("https", myhttps);
-			String[] serachArrDate = arg0.getDepDate().split("-");
-			String dep = serachArrDate[2] + "/" + serachArrDate[1] + "/"
-					+ serachArrDate[0];
+			String[] depDate = arg0.getDepDate().split("-");
+			String[] retDate = arg0.getRetDate().split("-");
+			String dep = depDate[2] + "/" + depDate[1] + "/" + depDate[0];
+			String ret = retDate[2] + "/" + retDate[1] + "/" + retDate[0];
 			// 提交表单
 			post = new QFPostMethod(postUrl);
 			NameValuePair[] parametersBody = new NameValuePair[] {
 					new NameValuePair("clickedButton", "btnSearch"),
-					new NameValuePair("TRIPTYPE", "O"),
+					new NameValuePair("TRIPTYPE", "R"),
 					new NameValuePair("DEPPORT", arg0.getDep()),
 					new NameValuePair("ARRPORT", arg0.getArr()),
 					new NameValuePair("DEPDATE", dep),
-					new NameValuePair("RETDATE", ""),
+					new NameValuePair("RETDATE", ret),
 					new NameValuePair("ADULT", "1"),
 					new NameValuePair("CHILD", "0"),
 					new NameValuePair("INFANT", "0"),
@@ -198,24 +206,56 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 				.replace("\\n", "").replace("\\r", "").replace("\\t", "")
 				.replace("\\", "").replace("//", "");
 		List<OneWayFlightInfo> flightList = new ArrayList<OneWayFlightInfo>();
+		List<OneWayFlightInfo> retList = new ArrayList<OneWayFlightInfo>();
 		try {
+			// 获取div
+			String[] tables = StringUtils.substringsBetween(html,
+					"<div id='tablo scroll'", "<div class='colElem baggage'>");
 			// 获取input信息
-			String tables[] = StringUtils.substringsBetween(html,
-					"<input style='cursor:pointer;' type='radio'", ">");
 			if (tables == null || tables.length < 1) {
 				result.setRet(true);
 				result.setStatus(Constants.NO_RESULT);
 				return result;
 			}
 			// 获取航班列表信息
-			findListbyPageNum(flightList, arg0, tables, html);
-			if (flightList.size() == 0) {
+			findListbyPageNum(flightList, arg0, tables[0], html, 0);
+			findListbyPageNum(retList, arg0, tables[1], html, 1);
+			if (flightList.size() == 0 || retList.size() == 0) {
 				result.setStatus(Constants.NO_RESULT);
 				result.setRet(true);
 				return result;
 			}
+			List<RoundTripFlightInfo> roundTripFlightInfos = new ArrayList<RoundTripFlightInfo>();
+			for (BaseFlightInfo out : retList) {
+				FlightDetail outDetail = out.getDetail();
+				double outprice = outDetail.getPrice();
+				for (BaseFlightInfo in : flightList) {
+					RoundTripFlightInfo round = new RoundTripFlightInfo();
+					FlightDetail detail = in.getDetail();
+					FlightDetail newDetail = new FlightDetail();
+					// 获取机票价格
+					double inprice = detail.getPrice();
+					double totalprice = inprice + outprice;
+					// 设置明细信息
+					newDetail.setPrice(new Double(String.format("%.2f",
+							totalprice)));// 票价
+					newDetail.setMonetaryunit(detail.getMonetaryunit());
+					newDetail.setArrcity(detail.getArrcity());
+					newDetail.setDepdate(detail.getDepdate());
+					newDetail.setDepcity(detail.getDepcity());
+					newDetail.setFlightno(detail.getFlightno());
+					newDetail.setWrapperid(detail.getWrapperid());
+					round.setDetail(newDetail);
+					round.setInfo(in.getInfo());
+					// 返程信息
+					round.setRetinfo(out.getInfo());
+					round.setRetdepdate(outDetail.getDepdate());
+					round.setRetflightno(outDetail.getFlightno());
+					roundTripFlightInfos.add(round);
+				}
+			}
 			result.setStatus(Constants.SUCCESS);
-			result.setData(flightList);
+			result.setData(roundTripFlightInfos);
 			result.setRet(true);
 		} catch (Exception e) {
 			result.setStatus(Constants.PARSING_FAIL);
@@ -232,10 +272,14 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 	 */
 	public List<OneWayFlightInfo> findListbyPageNum(
 			List<OneWayFlightInfo> flightList, FlightSearchParam arg1,
-			String tables[], String html) throws Exception {
+			String tables, String html, int status) throws Exception {
 		try {
-			String deptDate = arg1.getDepDate();
-			for (int i = 0; i < tables.length; i++) {
+
+			String deptDate = status == 0 ? arg1.getDepDate() : arg1
+					.getRetDate();
+			String wayInfo[] = StringUtils.substringsBetween(tables,
+					"<input style='cursor:pointer;' type='radio'", ">");
+			for (int i = 0; i < wayInfo.length; i++) {
 				// 航班完整信息
 				OneWayFlightInfo oneWayFlightInfo = new OneWayFlightInfo();
 				FlightDetail detail = new FlightDetail();
@@ -243,7 +287,7 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 				List<FlightSegement> info = new ArrayList<FlightSegement>();
 				// 航班号
 				List<String> fliNo = new ArrayList<String>();
-				String trConent = tables[i];
+				String trConent = wayInfo[i];
 				String radiovalue = StringUtils.substringBetween(trConent,
 						"value='", "'");
 				String[] radiovalues = radiovalue.split("#");
@@ -252,26 +296,30 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 				String priceHtml = StringUtils.substringBetween(html,
 						"sfArray[0]", "sfList[" + radiovalues[2] + "]");
 				String[] prices = priceHtml.split(";");
-				String basePrice = StringUtils.substringBetween(html,
+				String basePrice = StringUtils.substringBetween(tables,
 						"<span name='fareOfFlight'>", "</span>");
-				String feedecimal = StringUtils.substringBetween(html,
+				String feedecimal = StringUtils.substringBetween(tables,
 						"<span name='fareDecimalOfFlight' class='feedecimal'>",
 						"</span>");
 				basePrice += feedecimal;
 				double price = 0;
-				for (String string : prices) {
-					if (string.contains(state)) {
-						String value = StringUtils.substringBetween(string,
-								"(", ")").replace("'", "");
-						String[] values = value.split(",");
-						double nprice = Double.parseDouble(values[3]);
-						if (price == 0 || price > nprice) {
-							price = nprice;
+				if (status == 0) {
+					for (String string : prices) {
+						if (string.contains(state)) {
+							String value = StringUtils.substringBetween(string,
+									"(", ")").replace("'", "");
+							String[] values = value.split(",");
+							double nprice = Double.parseDouble(values[3]);
+							if (price == 0 || price > nprice) {
+								price = nprice;
+							}
 						}
 					}
 				}
-				String totalPrice = String.format("%.2f",
-						new Double(basePrice).doubleValue() + price);
+				String totalPrice = status == 0 ? String.format("%.2f",
+						new Double(basePrice).doubleValue() + price) : String
+						.format("%.2f", new Double(basePrice));
+				System.out.println(totalPrice);
 				String inputText = StringUtils.substringBetween(trConent,
 						"flightInfo(", ")");
 				inputText = inputText.replace("SIN, Changi T-1", "SIN")
@@ -307,7 +355,7 @@ public class Wrapper_gjdairy5001 implements QunarCrawler {
 				detail.setArrcity(arg1.getArr());
 				detail.setFlightno(fliNo);
 				detail.setDepdate(dateFormat.parse(deptDate));
-				detail.setWrapperid("gjdairy5001");
+				detail.setWrapperid("gjsairy5001");
 				oneWayFlightInfo.setDetail(detail);
 				oneWayFlightInfo.setInfo(info);
 				flightList.add(oneWayFlightInfo);
