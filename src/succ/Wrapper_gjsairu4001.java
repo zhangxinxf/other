@@ -1,4 +1,5 @@
 package succ;
+
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -54,10 +55,10 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("BIR");
-		searchParam.setArr("TMI");
-		searchParam.setDepDate("2014-09-26");
-		searchParam.setRetDate("2014-10-21");
+		searchParam.setDep("BWA");
+		searchParam.setArr("KTM");
+		searchParam.setDepDate("2014-07-23");
+		searchParam.setRetDate("2014-07-31");
 		searchParam.setTimeOut("600000");
 		searchParam.setToken("");
 		new Wrapper_gjsairu4001().run(searchParam);
@@ -348,8 +349,10 @@ public class Wrapper_gjsairu4001 implements QunarCrawler {
 				detail.setDepdate(dateFormat.parse(deptDate));
 				detail.setWrapperid("gjsairu4001");
 				// 航班信息
-				flightSegement.setArrairport(arg1.getArr());
-				flightSegement.setDepairport(arg1.getDep());
+				String dep=status==0?arg1.getDep():arg1.getArr();
+				String arr=status==0?arg1.getArr():arg1.getDep();
+				flightSegement.setDepairport(dep);
+				flightSegement.setArrairport(arr);
 				flightSegement.setArrtime(arrTime);
 				flightSegement.setDeptime(depTime);
 				flightSegement.setDepDate(deptDate);
