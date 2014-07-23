@@ -52,7 +52,7 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 
 	public static void main(String[] args) {
 		FlightSearchParam searchParam = new FlightSearchParam();
-		searchParam.setDep("DYU");
+		searchParam.setDep("PEK");
 		searchParam.setArr("MOW");
 		searchParam.setDepDate("2014-08-01");
 		searchParam.setTimeOut("600000");
@@ -60,7 +60,6 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 		// BookingResult book=new
 		// Wrapper_gjdairsz001().getBookingInfo(searchParam);
 		// JSONObject jsonObject=(JSONObject) JSONObject.toJSON(book);
-		// System.out.println(jsonObject.toJSONString());
 		new Wrapper_gjdairsz001().run(searchParam);
 	}
 
@@ -70,15 +69,6 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 
 			String filePath = "G:\\air.html";
 			File f = new File(filePath);
-			// if (!f.exists()) {
-			// html = new Wrapper_gjdairsz001().getHtml(searchParam);
-			// html = html.replace("\\u003c", "<").replace("\\u003e", ">")
-			// .replace("\\", "").replace("//", "");
-			// Files.write(html, f, Charsets.UTF_8);
-			// } else {
-			// html = Files.toString(f, Charsets.UTF_8);
-			// }
-
 			html = new Wrapper_gjdairsz001().getHtml(searchParam);
 			Files.write(html, f, Charsets.UTF_8);
 			ProcessResultInfo result = new ProcessResultInfo();
@@ -87,13 +77,8 @@ public class Wrapper_gjdairsz001 implements QunarCrawler {
 				List<OneWayFlightInfo> flightList = (List<OneWayFlightInfo>) result
 						.getData();
 				for (OneWayFlightInfo in : flightList) {
-					System.out
-							.println("************" + in.getInfo().toString());
-					System.out.println("++++++++++++"
-							+ in.getDetail().toString());
 				}
 			} else {
-				System.out.println(result.getStatus());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

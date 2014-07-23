@@ -1,6 +1,4 @@
 
-
-
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -50,7 +48,7 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 	private static final String root = "http://flight.asiatravel.com/crs.flight/www/flight.aspx?scode=&lan=en-US";
 
 	private static Map<String, String> data = new HashMap<String, String>();
-	{
+	static {
 		data.put("BJS", "PEK");
 		data.put("SIA", "XIY");
 	}
@@ -69,7 +67,8 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 		searchParam.setTimeOut("600000");
 		searchParam.setWrapperid("gjdweb00031");
 		searchParam.setToken("");
-		BookingResult book=new Wrapper_gjsweb00031().getBookingInfo(searchParam);
+		BookingResult book = new Wrapper_gjsweb00031()
+				.getBookingInfo(searchParam);
 		System.out.println(JSON.toJSONString(book));
 		new Wrapper_gjsweb00031().run(searchParam);
 	}
@@ -123,7 +122,7 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 			httpClient.getParams().setCookiePolicy(
 					CookiePolicy.BROWSER_COMPATIBILITY);
 			get = new QFGetMethod(root);
-			
+
 			String response = "";
 			for (int i = 0; i < 5; i++) {
 				try {
@@ -250,22 +249,22 @@ public class Wrapper_gjsweb00031 implements QunarCrawler {
 							"Radio_return"),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Days",
-							Integer.parseInt(serachDepDate[2])+""),
+							Integer.parseInt(serachDepDate[2]) + ""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Month",
 							Integer.parseInt(serachDepDate[1]) + ""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Year",
-							Integer.parseInt(serachDepDate[0])+""),
+							Integer.parseInt(serachDepDate[0]) + ""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Days",
-							Integer.parseInt(serachArrDate[2])+""),
+							Integer.parseInt(serachArrDate[2]) + ""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Month",
 							Integer.parseInt(serachArrDate[1]) + ""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_Returnsml$Dropdownlist_Year",
-							Integer.parseInt(serachArrDate[0])+""),
+							Integer.parseInt(serachArrDate[0]) + ""),
 					new NameValuePair(
 							"QuickSearch_View$DateSelection_DepartSml$Dropdownlist_Timing",
 							"ANY"),

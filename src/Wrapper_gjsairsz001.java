@@ -67,15 +67,6 @@ public class Wrapper_gjsairsz001 implements QunarCrawler {
 
 			String filePath = "G:\\air.html";
 			File f = new File(filePath);
-			// if (!f.exists()) {
-			// html = new Wrapper_gjdairgr001().getHtml(searchParam);
-			// html = html.replace("\\u003c", "<").replace("\\u003e", ">")
-			// .replace("\\", "").replace("//", "");
-			// Files.write(html, f, Charsets.UTF_8);
-			// } else {
-			// html = Files.toString(f, Charsets.UTF_8);
-			// }
-
 			html = new Wrapper_gjsairsz001().getHtml(searchParam);
 			Files.write(html, f, Charsets.UTF_8);
 			ProcessResultInfo result = new ProcessResultInfo();
